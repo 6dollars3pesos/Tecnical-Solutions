@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Aimtec.SDK.Menu;
 using Aimtec.SDK.Menu.Components;
 using Aimtec.SDK.Orbwalking;
@@ -82,7 +83,7 @@ namespace TecnicalGangplank.Configurations
             }
             {
                 Menu cleanseMenu = new Menu("tecgp.cleanse", "Cleansing");
-                foreach (BuffType cBuff in enabledBuffs.Keys)
+                foreach (BuffType cBuff in enabledBuffs.Keys.ToArray())
                 {
                     enabledBuffs[cBuff] = new MenuBool("tecgp.cleanse." + cBuff, cBuff.ToString());
                     cleanseMenu.Add(enabledBuffs[cBuff]);

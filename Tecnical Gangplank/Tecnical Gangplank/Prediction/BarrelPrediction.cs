@@ -18,9 +18,11 @@ namespace TecnicalGangplank.Prediction
         
         public BarrelPrediction(BarrelManager manager)
         {
+            Console.WriteLine("Adding champs to Pred");
             barrelManager = manager;
             foreach (var enemy in GameObjects.EnemyHeroes)
             {
+                Console.WriteLine("Added " + enemy.ChampionName);
                 enemies.Add(new PredictionPlayer(enemy));
             }
         }
@@ -39,12 +41,11 @@ namespace TecnicalGangplank.Prediction
         {
             int completeReactionTime = GetReactionTime(enemies.Find(e => e.Hero == enemy));
 
-            Vector3 predictedEnemyPosition =
-                GetPositionAfterTime(enemy, completeReactionTime);
-
+            Vector3 predictedEnemyPosition = GetPositionAfterTime(enemy, completeReactionTime);
             if (predictedEnemyPosition.Distance(barrel.BarrelObject.Position) < Storings.BARRELRANGE
                 - Storings.PREDICTIONMODIFIER * Math.Min(delay - completeReactionTime, 0) * enemy.MoveSpeed)
             {
+                Console.WriteLine("CanHitEnemy");
                 return true;
             }
 
@@ -101,7 +102,7 @@ namespace TecnicalGangplank.Prediction
         private int GetReactionTime(PredictionPlayer enemy)
         {
             return reactionTime + Math.Max(Storings.ADDITIONALREACTTIME 
-                  + enemies.Find(e => e.Hero == enemy).LastPositionChange - Game.TickCount, 0);
+                  + enemies.Find(e => e == enemy).LastPositionChange - Game.TickCount, 0);
         }
         
                 

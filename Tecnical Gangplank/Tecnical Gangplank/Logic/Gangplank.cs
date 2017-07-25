@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Aimtec;
 using Aimtec.SDK.Extensions;
@@ -89,8 +90,8 @@ namespace TecnicalGangplank.Logic
         private void ComboMode(Obj_AI_Hero target)
         {
             if (target == null 
-                || Orbwalker.IsWindingUp 
-                && (Orbwalker.GetOrbwalkingTarget() is Obj_AI_Hero || Orbwalker.GetOrbwalkingTarget().Name == Storings.BARRELNAME))
+                || (Orbwalker.IsWindingUp 
+                && (Orbwalker.GetOrbwalkingTarget() is Obj_AI_Hero || Orbwalker.GetOrbwalkingTarget().Name == Storings.BARRELNAME)))
             {
                 return;
             }
@@ -117,7 +118,6 @@ namespace TecnicalGangplank.Logic
             {
                 Orbwalker.ForceTarget(null);
             }
-
             if (MenuConfiguration.ComboQBarrel.Value && Q.Ready)
             {
                 //Direct Q to Barrel
@@ -128,6 +128,7 @@ namespace TecnicalGangplank.Logic
                     {
                         continue;
                     }
+                    Console.WriteLine("HITTING Barrel");
                     Q.Cast(barrel.BarrelObject);
                     return;
                 }
@@ -173,11 +174,12 @@ namespace TecnicalGangplank.Logic
                 {
                     var predictionCircle = barrelPrediction.GetPredictionCircle(
                         target, Storings.CHAINTIME + Helper.GetQTime(barrel.BarrelObject.Position));
-                    var castPos = target.Position.ReduceToMaxDistance(predictionCircle.Item1, Storings.CONNECTRANGE);
+                    var castPos = barrel.BarrelObject.Position.ReduceToMaxDistance(predictionCircle.Item1, Storings.CONNECTRANGE);
                     if (!barrel.CanQNow(200) || !(castPos.Distance(target.Position) < predictionCircle.Item2))
                     {
                         continue;
                     }
+                    Console.WriteLine("Casting E to Position");
                     E.Cast(castPos);
                     return;
                 }

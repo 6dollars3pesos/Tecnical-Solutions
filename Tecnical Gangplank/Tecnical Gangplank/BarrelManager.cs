@@ -47,10 +47,11 @@ namespace TecnicalGangplank
 
         private void AddBarrel(GameObject barrel)
         {
-            if (barrel == null || !barrel.IsMinion || !barrel.IsAlly || barrel.Name != Storings.BARRELNAME)
+            if (barrel == null || !barrel.IsMinion || barrel.Name != Storings.BARRELNAME)
             {
                 return;
             }
+            Console.WriteLine("ADDED");
             Barrels.Add(new Barrel((Obj_AI_Minion)barrel));
         }
         
@@ -58,7 +59,7 @@ namespace TecnicalGangplank
         
         private void RemoveBarrel(GameObject barrel)
         {
-            if (barrel == null || !barrel.IsMinion || !barrel.IsAlly || barrel.Name != Storings.BARRELNAME)
+            if (barrel == null || !barrel.IsMinion || barrel.Name != Storings.BARRELNAME)
             {
                 return;
             }
