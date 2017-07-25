@@ -1,0 +1,24 @@
+﻿using Aimtec;
+using Aimtec.SDK.TargetSelector;
+using TecnicalGangplank.Logic;
+using Spell = Aimtec.SDK.Spell;
+
+namespace TecnicalGangplank.Configurations
+{
+    internal static class Storings
+    {
+        //Todo find right value for QDELAY
+        public const int QDELAY = 300;
+        public const int EXECUTION_OFFSET = 100;
+        public const int ADDITIONALREACTTIME = 50;
+        public const float CONNECTRANGE = 685;
+        public const int CHAINTIME = 400;
+        public const string BARRELNAME = "barrel";
+        public const int QDELTA = 25;
+        public const float BARRELRANGE = CONNECTRANGE / 2;
+        public const float PREDICTIONMODIFIER = 0.8f;
+        public static readonly Obj_AI_Hero Player = ObjectManager.GetLocalPlayer();
+        public static readonly ITargetSelector Selector = TargetSelector.Implementation;
+        public static readonly Champion CHAMPIONIMPL = new Gangplank();
+    }
+}

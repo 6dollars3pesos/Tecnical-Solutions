@@ -1,0 +1,70 @@
+﻿using Aimtec;
+using TecnicalGangplank.Configurations;
+using Spell = Aimtec.SDK.Spell;
+
+namespace TecnicalGangplank.Logic
+{
+    public abstract class Champion : IChampion
+    {
+        public Config MenuConfiguration;
+        
+        #region Properties
+
+        public Spell Q { get; }
+
+        public Spell W { get; }
+
+        public Spell E { get; }
+
+        public Spell R { get; }
+                
+        #endregion
+        
+        protected Champion(float[] ranges)
+        {
+            if (ranges.Length != 4)
+            {
+                throw new TechnicalException("Champion could not be initialized - Improper Constructor call");
+            }
+            Q = new Spell(SpellSlot.Q, ranges[0]);
+            W = new Spell(SpellSlot.W, ranges[1]);
+            E = new Spell(SpellSlot.E, ranges[2]);
+            R = new Spell(SpellSlot.R, ranges[3]);
+        }
+
+        public abstract void UpdateGame();
+
+        public void HandleGameLoad()
+        {
+            InternalGameLoad();
+            LoadGame();
+        }
+
+        public abstract void LoadGame();
+        
+        
+
+        private void InternalGameLoad()
+        {
+            MenuConfiguration = new Config();
+            Game.OnUpdate += UpdateGame;
+            Obj_AI_Base.OnProcessSpellCast += (sender, e) =>
+            {
+                if (sender.IsMe)
+                {
+                    ProcessPlayerCast(sender, e);
+                }
+            };
+            Obj_AI_Base.OnProcessAutoAttack += (sender, e) =>
+            {
+                if (sender.IsMe)
+                {
+                    ProcessPlayerAutoAttack(sender, e);
+                }
+            };
+        }
+
+        protected abstract void ProcessPlayerCast(Obj_AI_Base sender, Obj_AI_BaseMissileClientDataEventArgs e);
+        protected abstract void ProcessPlayerAutoAttack(Obj_AI_Base sender, Obj_AI_BaseMissileClientDataEventArgs e);
+    }
+}

@@ -1,0 +1,145 @@
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using Aimtec;
+using Aimtec.SDK.Extensions;
+using TecnicalGangplank.Configurations;
+
+namespace TecnicalGangplank
+{
+    public class BarrelManager
+    {
+        //Todo verify
+        private SortedSet<Barrel> Barrels { get; }
+
+        public BarrelManager()
+        {
+            Barrels = new SortedSet<Barrel>();
+            GameObject.OnCreate += AddBarrel;
+            GameObject.OnDestroy += RemoveBarrel;
+            Obj_AI_Base.OnProcessAutoAttack += ReduceTicks;
+        }
+
+        private void ReduceTicks(Obj_AI_Base sender, Obj_AI_BaseMissileClientDataEventArgs args)
+        {
+            GameObject target = args.Target;
+            if (target == null || !target.IsMinion || !target.IsAlly || target.Name != Storings.BARRELNAME)
+            {
+                return;
+            }
+            Obj_AI_Minion barrel = target as Obj_AI_Minion;
+            Barrel toReduce = Barrels.FirstOrDefault(b => b.BarrelObject == barrel);
+            if (toReduce == null)
+            {
+                return;
+            }
+            if (args.Sender.IsMelee)
+            {
+                toReduce.ReduceBarrelAttackTick();
+            }
+            else
+            {
+                toReduce.ReduceBarrelAttackTick((int)(args.Start.Distance(args.End)
+                                                      /args.SpellData.MissileSpeed));
+            }
+        }
+
+        private void AddBarrel(GameObject barrel)
+        {
+            if (barrel == null || !barrel.IsMinion || !barrel.IsAlly || barrel.Name != Storings.BARRELNAME)
+            {
+                return;
+            }
+            Barrels.Add(new Barrel((Obj_AI_Minion)barrel));
+        }
+        
+        
+        
+        private void RemoveBarrel(GameObject barrel)
+        {
+            if (barrel == null || !barrel.IsMinion || !barrel.IsAlly || barrel.Name != Storings.BARRELNAME)
+            {
+                return;
+            }
+            Barrels.RemoveWhere(b => b.BarrelObject == barrel);
+        }
+        
+        
+        
+        /// <summary>
+        /// Gets all Barrels in Range of the current Barrel
+        /// Does not include the actual Barrel itself
+        /// </summary>
+        /// <param name="barrel">Barrel with barrels around</param>
+        /// <param name="range">Requested Range (default Maxrange)</param>
+        /// <returns>All Barrels in Range</returns>
+        public IEnumerable<Barrel> GetBarrelsInRange(Barrel barrel, float range = Storings.CONNECTRANGE)
+        {
+            return Barrels.Where(b => b != barrel 
+                && b.BarrelObject.Distance(barrel.BarrelObject) <= range);
+        }
+
+        public IEnumerable<Barrel> GetBarrelsInRange(float range)
+        {
+            return Barrels.Where(b => b.BarrelObject.Distance(Storings.Player) <= range);
+        }
+
+        public IEnumerable<Tuple<Barrel, int>> GetBarrelsWithBounces(Obj_AI_Minion initObj)
+        {
+            return GetBarrelsWithBounces(Barrels.First(b => b.BarrelObject == initObj));
+        }
+
+        /// <summary>
+        /// Gets all Barrels that are chained to the current Barrel
+        /// 
+        /// Does include the Barrel itself
+        /// </summary>
+        /// <param name="initObj">Object in the middle</param>
+        /// <returns>All Barrels with number of Chains</returns>
+        public IEnumerable<Tuple<Barrel, int>> GetBarrelsWithBounces(Barrel initObj)
+        {
+            Barrel[] barrels = Barrels.ToArray();
+            bool[] alreadyused = new bool[barrels.Length];
+            for (int i = 0; i < barrels.Length; i++)
+            {
+                if (barrels[i] == initObj)
+                {
+                    alreadyused[i] = false;
+                    break;
+                }
+            }
+            List<Tuple<Barrel, int>> toReturn = new List<Tuple<Barrel, int>> 
+                {new Tuple<Barrel, int>(initObj, 0)};
+            
+            bool foundObjects = true;
+            int cind = 0;
+            while (foundObjects)
+            {
+                cind++;
+                foundObjects = false;
+                for (int i = 0; i < alreadyused.Length; i++)
+                {
+                    if (alreadyused[i])
+                    {
+                        continue;
+                    }
+                    for (int j = toReturn.Count - 1; j >= 0; j--)
+                    {
+                        if (toReturn[j].Item2 < cind - 1)
+                        {
+                            break;
+                        }
+                        if (barrels[i].BarrelObject.Distance(toReturn[j].Item1.BarrelObject) <= Storings.CONNECTRANGE)
+                        {
+                            alreadyused[i] = true;
+                            foundObjects = true;
+                            toReturn.Add(new Tuple<Barrel, int>(barrels[i],cind));
+                        }
+                    }
+                }
+            }
+            return toReturn;
+        }
+    }
+}
