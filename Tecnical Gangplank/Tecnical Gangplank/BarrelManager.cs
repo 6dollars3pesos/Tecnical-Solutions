@@ -87,6 +87,11 @@ namespace TecnicalGangplank
             return Barrels.Where(b => b.BarrelObject.Distance(pos) <= range);
         }
 
+        public Barrel GetNearestBarrel(Vector3 pos)
+        {
+            return Barrels.MinBy(b => b.BarrelObject.Distance(pos));
+        }
+
         
         
 

@@ -54,6 +54,7 @@
     <Compile Include="BarrelManager.cs" />
     <Compile Include="Extensions\SpellExtensions.cs" />
     <Compile Include="Logic\ExplosionTrigger.cs" />
+    <Compile Include="Logic\SpellQueuer.cs" />
     <Compile Include="Prediction\BarrelPrediction.cs" />
     <Compile Include="Configurations\Config.cs" />
     <Compile Include="Configurations\Storings.cs" />

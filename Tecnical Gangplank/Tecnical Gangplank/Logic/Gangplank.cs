@@ -37,6 +37,11 @@ namespace TecnicalGangplank.Logic
 
         public override void UpdateGame()
         {
+            if (!E.Ready)
+            {
+                Console.WriteLine("Cooldown of E is {}", E.GetSpell().Cooldown);
+            }
+            Keys();
             Cleanse();
             Killsteal();
             switch (MenuConfiguration.Orbwalker.Mode)
@@ -318,6 +323,27 @@ namespace TecnicalGangplank.Logic
             if (W.Ready && MenuConfiguration.EnabledBuffs.Any(b => b.Value.Enabled && Player.HasBuffOfType(b.Key)))
             {
                 W.Cast();
+            }
+        }
+        
+        /// <summary>
+        /// All custom Keys
+        /// </summary>
+        private void Keys()
+        {
+            //Todo verify Cooldown
+            if (MenuConfiguration.KeyDetonation.Value && MenuConfiguration.KeyDetonationKey.Value && E.Ready
+                && Q.GetSpell().Cooldown < 1000)
+            {
+                Barrel nearestBarrel = barrelManager.GetNearestBarrel(Game.CursorPos);
+                if (nearestBarrel != null)
+                {
+                    Vector3 castPos =
+                        nearestBarrel.BarrelObject.Position.ReduceToMaxDistance(Game.CursorPos, Storings.CONNECTRANGE);
+                    E.Cast(castPos);
+                    // ReSharper disable once ObjectCreationAsStatement
+                    new SpellQueuer(Q, nearestBarrel.BarrelObject, 3000);
+                }
             }
         }
     }

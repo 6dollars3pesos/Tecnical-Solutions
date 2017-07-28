@@ -4,6 +4,7 @@ using Aimtec;
 using Aimtec.SDK.Menu;
 using Aimtec.SDK.Menu.Components;
 using Aimtec.SDK.Orbwalking;
+ using Aimtec.SDK.Util;
 
 namespace TecnicalGangplank.Configurations
 {
@@ -41,6 +42,10 @@ namespace TecnicalGangplank.Configurations
         public MenuBool KillStealQ { get; }
         
         public MenuBool KillStealR { get; }
+        
+        public MenuBool KeyDetonation { get; }
+        
+        public MenuKeyBind KeyDetonationKey { get; }
 
         public Dictionary<BuffType, MenuBool> EnabledBuffs = new Dictionary<BuffType, MenuBool>
         {
@@ -65,6 +70,14 @@ namespace TecnicalGangplank.Configurations
             FullMenu = new Menu("tecgp.root","Technical Gangplank",true);
             {
                 Orbwalker.Attach(FullMenu);
+            }
+            {
+                Menu keysMenu = new Menu("tecgp.keys", "Keys");
+                KeyDetonation = new MenuBool("tecgp.keys.detonation", "Extend Barrel to mouse and detonate first");
+                KeyDetonationKey = new MenuKeyBind("tecgp.keys.detonationkey", "Key for Extending Barrel", KeyCode.T, KeybindType.Press);
+                keysMenu.Add(KeyDetonation);
+                keysMenu.Add(KeyDetonationKey);
+                FullMenu.Add(keysMenu);
             }
             {
                 Menu spellMenu = new Menu("tecgp.combo", "Combo");
