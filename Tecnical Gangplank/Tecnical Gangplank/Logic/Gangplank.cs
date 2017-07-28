@@ -241,7 +241,8 @@ namespace TecnicalGangplank.Logic
                     var attackableBarrel = enumerable.FirstOrDefault(
                         b => b.CanQNow() &&
                         GameObjects.EnemyMinions.Count(
-                                 m => m.Distance(b.BarrelObject) < Storings.BARRELRANGE) >=
+                                 m => m.Health <= Player.GetSpellDamage(m, SpellSlot.Q) &&
+                                     m.Distance(b.BarrelObject) < Storings.BARRELRANGE) >=
                              MenuConfiguration.LastHitMinimumQ.Value);
                     if (attackableBarrel != null)
                     {
