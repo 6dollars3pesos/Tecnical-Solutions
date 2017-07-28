@@ -39,7 +39,7 @@ namespace TecnicalGangplank.Logic
         {
             if (!E.Ready)
             {
-                Console.WriteLine("Cooldown of E is {}", E.GetSpell().Cooldown);
+                Console.WriteLine("Cooldown of E is {0}", E.GetSpell().Cooldown);
             }
             Keys();
             Cleanse();
@@ -336,7 +336,8 @@ namespace TecnicalGangplank.Logic
                 && Q.GetSpell().Cooldown < 1000)
             {
                 Barrel nearestBarrel = barrelManager.GetNearestBarrel(Game.CursorPos);
-                if (nearestBarrel != null && nearestBarrel.CanQNow(100))
+                if (nearestBarrel != null && nearestBarrel.CanQNow(100) 
+                    && !barrelManager.GetBarrelsInRange(nearestBarrel, Storings.BARRELRANGE).Any())
                 {
                     Vector3 castPos =
                         nearestBarrel.BarrelObject.Position.ReduceToMaxDistance(Game.CursorPos, Storings.CONNECTRANGE);
