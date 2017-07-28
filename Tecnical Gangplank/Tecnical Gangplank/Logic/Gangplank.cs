@@ -155,7 +155,7 @@ namespace TecnicalGangplank.Logic
                 //Double-Logic
                 if (MenuConfiguration.ComboDoubleE.Value 
                     //Todo Verify Cooldown
-                    && (E.Ready || E.GetSpell().CooldownEnd < 0.48))
+                    && (E.Ready || E.GetSpell().CooldownEnd - Game.ClockTime < 0.48))
                 {
                     foreach (Barrel barrel in barrelManager.GetBarrelsInRange(Q.Range + Storings.QDELTA))
                     {
@@ -171,7 +171,7 @@ namespace TecnicalGangplank.Logic
                 //Triple-Logic
                 if (MenuConfiguration.ComboTripleE.Value
                     //Todo Verfiy Cooldown
-                    && (E.Ready || E.GetSpell().CooldownEnd < 
+                    && (E.Ready || E.GetSpell().CooldownEnd - Game.ClockTime < 
                         0.001f * Storings.CHAINTIME + Storings.QDELAY - Storings.EXECUTION_OFFSET))
                 {
                     foreach (var barrel in barrelManager.GetBarrelsInRange(Q.Range))
@@ -188,7 +188,7 @@ namespace TecnicalGangplank.Logic
             
             //Extend Logic
             //Todo Verify Cooldown
-            if (MenuConfiguration.ComboEExtend.Value && E.Ready && (Q.Ready || Q.GetSpell().CooldownEnd < 0.5f)
+            if (MenuConfiguration.ComboEExtend.Value && E.Ready && (Q.Ready || Q.GetSpell().CooldownEnd - Game.ClockTime < 0.5f)
                 && !barrelManager.GetBarrelsInRange(target.Position, Storings.BARRELRANGE - 100).Any())
             {
                 foreach (var barrel in barrelManager.GetBarrelsInRange(Q.Range))
@@ -335,7 +335,7 @@ namespace TecnicalGangplank.Logic
             if (MenuConfiguration.KeyDetonation.Value && MenuConfiguration.KeyDetonationKey.Value)
             {
                 Orbwalker.Move(Game.CursorPos);
-                if (E.Ready && (Q.Ready || Q.GetSpell().Cooldown < 1))
+                if (E.Ready && (Q.Ready || Q.GetSpell().CooldownEnd - Game.ClockTime < 1))
                 {
                     Barrel nearestBarrel = barrelManager.GetNearestBarrel(Game.CursorPos);
                     if (nearestBarrel != null && nearestBarrel.CanQNow(100)
