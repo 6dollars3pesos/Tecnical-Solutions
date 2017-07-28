@@ -37,10 +37,6 @@ namespace TecnicalGangplank.Logic
 
         public override void UpdateGame()
         {
-            if (!E.Ready)
-            {
-                Console.WriteLine("Cooldown of E is {0}", E.GetSpell().CooldownEnd);
-            }
             Keys();
             Cleanse();
             Killsteal();
@@ -334,19 +330,23 @@ namespace TecnicalGangplank.Logic
         private void Keys()
         {
             //Todo verify Cooldown
-            if (MenuConfiguration.KeyDetonation.Value && MenuConfiguration.KeyDetonationKey.Value && E.Ready
-                && (Q.Ready || Q.GetSpell().Cooldown < 1))
+            if (MenuConfiguration.KeyDetonation.Value && MenuConfiguration.KeyDetonationKey.Value)
             {
-                Barrel nearestBarrel = barrelManager.GetNearestBarrel(Game.CursorPos);
-                if (nearestBarrel != null && nearestBarrel.CanQNow(100) 
-                    && nearestBarrel.BarrelObject.Distance(Player) < Q.Range
-                    && !barrelManager.GetBarrelsInRange(nearestBarrel, Storings.BARRELRANGE).Any())
+                Orbwalker.Move(Game.CursorPos);
+                if (E.Ready && (Q.Ready || Q.GetSpell().Cooldown < 1))
                 {
-                    Vector3 castPos =
-                        nearestBarrel.BarrelObject.Position.ReduceToMaxDistance(Game.CursorPos, Storings.CONNECTRANGE);
-                    E.Cast(castPos);
-                    // ReSharper disable once ObjectCreationAsStatement
-                    new SpellQueuer(Q, nearestBarrel.BarrelObject, 3000);
+                    Barrel nearestBarrel = barrelManager.GetNearestBarrel(Game.CursorPos);
+                    if (nearestBarrel != null && nearestBarrel.CanQNow(100)
+                        && nearestBarrel.BarrelObject.Distance(Player) < Q.Range
+                        && !barrelManager.GetBarrelsInRange(nearestBarrel, Storings.BARRELRANGE).Any())
+                    {
+                        Vector3 castPos =
+                            nearestBarrel.BarrelObject.Position.ReduceToMaxDistance(Game.CursorPos,
+                                Storings.CONNECTRANGE);
+                        E.Cast(castPos);
+                        // ReSharper disable once ObjectCreationAsStatement
+                        new SpellQueuer(Q, nearestBarrel.BarrelObject, 3000);
+                    }
                 }
             }
         }
