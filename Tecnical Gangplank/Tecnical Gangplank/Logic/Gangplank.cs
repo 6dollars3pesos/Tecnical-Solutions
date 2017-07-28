@@ -1,7 +1,9 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections;
+using System.Drawing;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using Aimtec;
 using Aimtec.SDK.Damage;
 using Aimtec.SDK.Extensions;
@@ -59,6 +61,7 @@ namespace TecnicalGangplank.Logic
 
         public override void LoadGame()
         {
+            Render.OnPresent += Draw;
         }
 
         protected override void ProcessPlayerCast(Obj_AI_Base sender, Obj_AI_BaseMissileClientDataEventArgs e)
@@ -347,6 +350,25 @@ namespace TecnicalGangplank.Logic
                         // ReSharper disable once ObjectCreationAsStatement
                         new SpellQueuer(Q, nearestBarrel.BarrelObject, 3000);
                     }
+                }
+            }
+        }
+        
+        private void Draw()
+        {
+            if (MenuConfiguration.DrawQ.Value)
+            {
+                Render.Circle(Player.Position, Q.Range, 90, Color.Red);
+            }
+            if (MenuConfiguration.DrawE.Value)
+            {
+                Render.Circle(Player.Position, E.Range, 90, Color.Red);
+            }
+            if (MenuConfiguration.DrawConnectionRange.Value)
+            {
+                foreach (var barrel in barrelManager.GetBarrels())
+                {
+                    Render.Circle(barrel.BarrelObject.Position, Storings.CONNECTRANGE, 90, Color.Green);
                 }
             }
         }

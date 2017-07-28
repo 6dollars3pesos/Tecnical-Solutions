@@ -26,7 +26,6 @@ namespace TecnicalGangplank
             Obj_AI_Base.OnProcessAutoAttack += ReduceTicks;
         }
 
-
         private void ReduceTicks(Obj_AI_Base sender, Obj_AI_BaseMissileClientDataEventArgs args)
         {
             GameObject target = args.Target;
@@ -95,6 +94,11 @@ namespace TecnicalGangplank
         public Barrel GetNearestBarrel(Vector3 pos)
         {
             return Barrels.MinBy(b => b.BarrelObject.Distance(pos));
+        }
+
+        public IEnumerable<Barrel> GetBarrels()
+        {
+            return Barrels;
         }
 
         

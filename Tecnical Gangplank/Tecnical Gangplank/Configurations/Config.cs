@@ -48,7 +48,13 @@ namespace TecnicalGangplank.Configurations
         public MenuKeyBind KeyDetonationKey { get; }
         
         public MenuBool KeyDetonationOrbwalk { get; }
-
+        
+        public MenuBool DrawQ { get; }
+                
+        public MenuBool DrawE { get; }
+        
+        public MenuBool DrawConnectionRange { get; }
+        
         public Dictionary<BuffType, MenuBool> EnabledBuffs = new Dictionary<BuffType, MenuBool>
         {
             {BuffType.Blind, null},
@@ -130,6 +136,17 @@ namespace TecnicalGangplank.Configurations
                 killStealMenu.Add(KillStealQ);
                 killStealMenu.Add(KillStealR);
                 FullMenu.Add(killStealMenu);
+            }
+            {
+                Menu drawingsMenu = new Menu("tecgp.draw", "Drawings");
+                DrawQ = new MenuBool("tecgp.drawq", "Draw Q Range", false);
+                DrawE = new MenuBool("tecgp.drawe", "Draw E Range", false);
+                DrawConnectionRange = new MenuBool("tecgp.drawconnectionrange", "Draw Barrel Connection Range", false);
+
+                drawingsMenu.Add(DrawQ);
+                drawingsMenu.Add(DrawE);
+                drawingsMenu.Add(DrawConnectionRange);
+                FullMenu.Add(drawingsMenu);
             }
             {
                 Menu miscMenu = new Menu("tecgp.misc", "Misc");
