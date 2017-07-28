@@ -336,7 +336,7 @@ namespace TecnicalGangplank.Logic
                 && Q.GetSpell().Cooldown < 1000)
             {
                 Barrel nearestBarrel = barrelManager.GetNearestBarrel(Game.CursorPos);
-                if (nearestBarrel != null)
+                if (nearestBarrel != null && nearestBarrel.CanQNow(100))
                 {
                     Vector3 castPos =
                         nearestBarrel.BarrelObject.Position.ReduceToMaxDistance(Game.CursorPos, Storings.CONNECTRANGE);
