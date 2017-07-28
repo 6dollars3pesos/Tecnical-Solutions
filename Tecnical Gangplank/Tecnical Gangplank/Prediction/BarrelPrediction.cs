@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Aimtec;
@@ -18,11 +18,9 @@ namespace TecnicalGangplank.Prediction
         
         public BarrelPrediction(BarrelManager manager)
         {
-            Console.WriteLine("Adding champs to Pred");
             barrelManager = manager;
             foreach (var enemy in GameObjects.EnemyHeroes)
             {
-                Console.WriteLine("Added " + enemy.ChampionName);
                 enemies.Add(new PredictionPlayer(enemy));
             }
         }
@@ -45,7 +43,6 @@ namespace TecnicalGangplank.Prediction
             if (predictedEnemyPosition.Distance(barrel.BarrelObject.Position) < Storings.BARRELRANGE
                 - Storings.PREDICTIONMODIFIER * Math.Min(delay - completeReactionTime, 0) * enemy.MoveSpeed)
             {
-                Console.WriteLine("CanHitEnemy");
                 return true;
             }
 
