@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using Aimtec;
 using Aimtec.SDK.Events;
@@ -15,10 +15,8 @@ namespace TecnicalGangplank
 
         private static void Initialize()
         {
-            Console.WriteLine(Storings.Player.ChampionName.ToLower());
             if (Storings.Player.ChampionName.ToLower() != "gangplank")
             {
-                Console.WriteLine(Storings.Player.ChampionName.ToLower());
                 return;
             }
             //Aimtec.SDK.Bootstrap.Load();

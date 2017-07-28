@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,21 +10,22 @@ namespace TecnicalGangplank
 {
     public class BarrelManager
     {
-        //Todo verify
         private SortedSet<Barrel> Barrels { get; }
 
         public BarrelManager()
         {
             Barrels = new SortedSet<Barrel>();
             GameObject.OnCreate += AddBarrel;
-            GameObject.OnDestroy += RemoveBarrel;
+            //Not beautiful/efficient, but reliable
+            Game.OnUpdate += RemoveBarrel;
             Obj_AI_Base.OnProcessAutoAttack += ReduceTicks;
         }
+
 
         private void ReduceTicks(Obj_AI_Base sender, Obj_AI_BaseMissileClientDataEventArgs args)
         {
             GameObject target = args.Target;
-            if (target == null || !target.IsMinion || !target.IsAlly || target.Name != Storings.BARRELNAME)
+            if (target == null || !target.IsMinion || target.Name != Storings.BARRELNAME)
             {
                 return;
             }
@@ -51,26 +52,21 @@ namespace TecnicalGangplank
             {
                 return;
             }
-            Console.WriteLine("ADDED");
             Barrels.Add(new Barrel((Obj_AI_Minion)barrel));
         }
         
         
         
-        private void RemoveBarrel(GameObject barrel)
+        private void RemoveBarrel()
         {
-            if (barrel == null || !barrel.IsMinion || barrel.Name != Storings.BARRELNAME)
-            {
-                return;
-            }
-            Barrels.RemoveWhere(b => b.BarrelObject == barrel);
+            Barrels.RemoveWhere(b => b.BarrelObject.Health < 1);
         }
         
         
         
         /// <summary>
         /// Gets all Barrels in Range of the current Barrel
-        /// Does not include the actual Barrel itself
+        /// <para>Does not include the actual Barrel itself</para>
         /// </summary>
         /// <param name="barrel">Barrel with barrels around</param>
         /// <param name="range">Requested Range (default Maxrange)</param>
@@ -93,8 +89,7 @@ namespace TecnicalGangplank
 
         /// <summary>
         /// Gets all Barrels that are chained to the current Barrel
-        /// 
-        /// Does include the Barrel itself
+        /// <para>Does include the Barrel itself</para>
         /// </summary>
         /// <param name="initObj">Object in the middle</param>
         /// <returns>All Barrels with number of Chains</returns>
@@ -106,7 +101,7 @@ namespace TecnicalGangplank
             {
                 if (barrels[i] == initObj)
                 {
-                    alreadyused[i] = false;
+                    alreadyused[i] = true;
                     break;
                 }
             }
@@ -131,6 +126,10 @@ namespace TecnicalGangplank
                         {
                             break;
                         }
+                        if (toReturn[j].Item2 > cind - 1)
+                        {
+                            continue;
+                        }
                         if (barrels[i].BarrelObject.Distance(toReturn[j].Item1.BarrelObject) <= Storings.CONNECTRANGE)
                         {
                             alreadyused[i] = true;
@@ -140,6 +139,12 @@ namespace TecnicalGangplank
                     }
                 }
             }
+            Console.WriteLine("Begin");
+            foreach (var tuple in toReturn)
+            {
+                Console.WriteLine(tuple.Item2);
+            }
+            Console.WriteLine("End");
             return toReturn;
         }
     }

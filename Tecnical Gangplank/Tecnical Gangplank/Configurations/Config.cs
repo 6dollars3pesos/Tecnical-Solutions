@@ -1,5 +1,6 @@
-﻿using System.Collections.Generic;
+﻿﻿using System.Collections.Generic;
 using System.Linq;
+using Aimtec;
 using Aimtec.SDK.Menu;
 using Aimtec.SDK.Menu.Components;
 using Aimtec.SDK.Orbwalking;
@@ -36,8 +37,12 @@ namespace TecnicalGangplank.Configurations
         public MenuBool LastHitQ { get; }
         
         public MenuSlider LastHitMinimumQ { get; }
+        
+        public MenuBool KillStealQ { get; }
+        
+        public MenuBool KillStealR { get; }
 
-        private readonly Dictionary<BuffType, MenuBool> enabledBuffs = new Dictionary<BuffType, MenuBool>
+        public Dictionary<BuffType, MenuBool> EnabledBuffs = new Dictionary<BuffType, MenuBool>
         {
             {BuffType.Blind, null},
             {BuffType.Stun, null},
@@ -83,17 +88,32 @@ namespace TecnicalGangplank.Configurations
             }
             {
                 Menu cleanseMenu = new Menu("tecgp.cleanse", "Cleansing");
-                foreach (BuffType cBuff in enabledBuffs.Keys.ToArray())
+                foreach (BuffType cBuff in EnabledBuffs.Keys.ToArray())
                 {
-                    enabledBuffs[cBuff] = new MenuBool("tecgp.cleanse." + cBuff, cBuff.ToString());
-                    cleanseMenu.Add(enabledBuffs[cBuff]);
+                    EnabledBuffs[cBuff] = new MenuBool("tecgp.cleanse." + cBuff, cBuff.ToString());
+                    cleanseMenu.Add(EnabledBuffs[cBuff]);
                 }
                 FullMenu.Add(cleanseMenu);
             }
             {
                 Menu lastHitMenu = new Menu("tecgp.lasthit", "Lasthit");
+                LastHitBarrelQ = new MenuBool("tecgp.lasthit.barrelq", "Q on Barrels");
+                LastHitMinimumQ = new MenuSlider("tecgp.lasthit.minimumq", "Minimum Minions to Q on Barrel", 2, 1, 8);
+                LastHitQ = new MenuBool("tecgp.lasthit.q", "Q on Minions");
                 
+                lastHitMenu.Add(LastHitBarrelQ);
+                lastHitMenu.Add(LastHitMinimumQ);
+                lastHitMenu.Add(LastHitQ);
                 FullMenu.Add(lastHitMenu);
+            }
+            {
+                Menu killStealMenu = new Menu("tecgp.ks", "Killsteal");
+                KillStealQ = new MenuBool("tecgp.killsteal.q", "Use Q");
+                KillStealR = new MenuBool("tecgp.killsteal.r", "Use R", false);
+
+                killStealMenu.Add(KillStealQ);
+                killStealMenu.Add(KillStealR);
+                FullMenu.Add(killStealMenu);
             }
             {
                 Menu miscMenu = new Menu("tecgp.misc", "Misc");

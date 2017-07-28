@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Aimtec;
@@ -15,14 +15,15 @@ namespace TecnicalGangplank
         private readonly int playerLevel;
 
         private readonly SortedSet<int> attackTimes = new SortedSet<int>();
-        
-        #endregion
-
-        
-        #region Public Members
 
         private int barrelAttackTime;
-        
+
+        #endregion
+
+
+        #region Public Members
+
+
         public Obj_AI_Minion BarrelObject { get; }
         
         #endregion
@@ -41,6 +42,7 @@ namespace TecnicalGangplank
         {
             BarrelObject = barrel;
             barrelAttackTime = GetBarrelAttackTime();
+            Console.WriteLine("Barrel attackable at " + barrelAttackTime + ", current time " + Game.TickCount);
             playerLevel = Storings.Player.Level;
         }
 
@@ -51,6 +53,7 @@ namespace TecnicalGangplank
 
         public void ReduceBarrelAttackTick(int delay)
         {
+            Console.WriteLine("Reduced Barrel Time");
             attackTimes.Add(Game.TickCount + delay);
             DelayAction.Queue(delay, () =>
             {
@@ -68,7 +71,7 @@ namespace TecnicalGangplank
         /// <param name="delay">additional Delay</param>
         /// <returns>true if player destroys Barrel with Q</returns>
         public bool CanQNow(int delay = 0)
-        {            
+        {
             return CanDestroyAtTime(Helper.GetQTime(BarrelObject.Position) + delay + Game.TickCount);
         }
 
@@ -91,7 +94,8 @@ namespace TecnicalGangplank
             {
                 return attackCount == 0;
             }
-            return getReducedTime() * attackCount <= tick && getReducedTime() * (attackCount + 1) > tick;
+            return barrelAttackTime - getReducedTime() * attackCount <= tick 
+                && barrelAttackTime - getReducedTime() * (attackCount + 1) > tick;
         }
 
         private int getReducedTime()

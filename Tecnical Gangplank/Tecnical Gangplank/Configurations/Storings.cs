@@ -1,4 +1,4 @@
-﻿using Aimtec;
+﻿﻿using Aimtec;
 using Aimtec.SDK.TargetSelector;
 using TecnicalGangplank.Logic;
 using Spell = Aimtec.SDK.Spell;
@@ -8,7 +8,7 @@ namespace TecnicalGangplank.Configurations
     internal static class Storings
     {
         //Todo find right value for QDELAY
-        public const int QDELAY = 300;
+        public const int QDELAY = 150;
         public const int EXECUTION_OFFSET = 400;
         public const int ADDITIONALREACTTIME = 50;
         public const float CONNECTRANGE = 685;

@@ -1,7 +1,9 @@
-﻿using System;
+﻿﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Aimtec;
+using Aimtec.SDK.Damage;
 using Aimtec.SDK.Extensions;
 using Aimtec.SDK.Orbwalking;
 using Aimtec.SDK.TargetSelector;
@@ -35,13 +37,24 @@ namespace TecnicalGangplank.Logic
 
         public override void UpdateGame()
         {
+            Cleanse();
+            Killsteal();
             switch (MenuConfiguration.Orbwalker.Mode)
             {
                 case OrbwalkingMode.Combo:
                     ComboMode(Selector.GetTarget(1200));
                     break;
+                case OrbwalkingMode.Lasthit:
+                    LastHitMode();
+                    break;
+                case OrbwalkingMode.Laneclear:
+                    //Todo explicit Laneclear Mode
+                    LastHitMode();
+                    break;
             }
         }
+
+
 
         public override void LoadGame()
         {
@@ -90,8 +103,9 @@ namespace TecnicalGangplank.Logic
         private void ComboMode(Obj_AI_Hero target)
         {
             if (target == null 
-                || (Orbwalker.IsWindingUp 
-                && (Orbwalker.GetOrbwalkingTarget() is Obj_AI_Hero || Orbwalker.GetOrbwalkingTarget().Name == Storings.BARRELNAME)))
+                || Orbwalker.IsWindingUp 
+                && (Orbwalker.GetOrbwalkingTarget() is Obj_AI_Hero ||
+                    Orbwalker.GetOrbwalkingTarget().Name == Storings.BARRELNAME))
             {
                 return;
             }
@@ -128,7 +142,7 @@ namespace TecnicalGangplank.Logic
                     {
                         continue;
                     }
-                    Console.WriteLine("HITTING Barrel");
+                    Console.WriteLine("Casting Q from here");
                     Q.Cast(barrel.BarrelObject);
                     return;
                 }
@@ -157,7 +171,8 @@ namespace TecnicalGangplank.Logic
                 {
                     foreach (var barrel in barrelManager.GetBarrelsInRange(Q.Range))
                     {
-                        if (barrelManager.GetBarrelsInRange(barrel).Any(b => GameObjects.EnemyHeroes.Any(
+                        if (barrel.CanQNow() 
+                            && barrelManager.GetBarrelsInRange(barrel).Any(b => GameObjects.EnemyHeroes.Any(
                             e => b.BarrelObject.Distance(e.Position) < 1100 && e.Distance(Player.Position) < 1000)))
                         {
                             Q.Cast(barrel.BarrelObject);
@@ -172,14 +187,17 @@ namespace TecnicalGangplank.Logic
             {
                 foreach (var barrel in barrelManager.GetBarrelsInRange(Q.Range))
                 {
-                    var predictionCircle = barrelPrediction.GetPredictionCircle(
-                        target, Storings.CHAINTIME + Helper.GetQTime(barrel.BarrelObject.Position));
-                    var castPos = barrel.BarrelObject.Position.ReduceToMaxDistance(predictionCircle.Item1, Storings.CONNECTRANGE);
-                    if (!barrel.CanQNow(200) || !(castPos.Distance(target.Position) < predictionCircle.Item2))
+                    if (!barrel.CanQNow(200))
                     {
                         continue;
                     }
-                    Console.WriteLine("Casting E to Position");
+                    var predictionCircle = barrelPrediction.GetPredictionCircle(
+                        target, Storings.CHAINTIME + Helper.GetQTime(barrel.BarrelObject.Position));
+                    var castPos = barrel.BarrelObject.Position.ReduceToMaxDistance(predictionCircle.Item1, Storings.CONNECTRANGE);
+                    if (!(castPos.Distance(target.Position) < predictionCircle.Item2))
+                    {
+                        continue;
+                    }
                     E.Cast(castPos);
                     return;
                 }
@@ -200,6 +218,104 @@ namespace TecnicalGangplank.Logic
                 {
                     E.Cast(castPosition);
                 }
+            }
+        }
+        
+        
+        /// <summary>
+        /// Lasthit Mode
+        /// <para>Codeflow:</para>
+        /// <para>Q on Barrel</para>
+        /// <para>Q on Minion</para>
+        /// </summary>
+        private void LastHitMode()
+        {
+            if (Q.Ready && (MenuConfiguration.LastHitBarrelQ.Value || MenuConfiguration.LastHitQ.Value))
+            {
+                IEnumerable<Barrel> barrels = barrelManager.GetBarrelsInRange(Q.Range);
+                var enumerable = barrels as Barrel[] ?? barrels.ToArray();
+                
+                //Lasthitting with Q to Barrel
+                if (MenuConfiguration.LastHitBarrelQ.Value && enumerable.Any())
+                {
+                    var attackableBarrel = enumerable.FirstOrDefault(
+                        b => b.CanQNow() &&
+                        GameObjects.EnemyMinions.Count(
+                                 m => m.Distance(b.BarrelObject) < Storings.BARRELRANGE) >=
+                             MenuConfiguration.LastHitMinimumQ.Value);
+                    if (attackableBarrel != null)
+                    {
+                        Q.Cast(attackableBarrel.BarrelObject);
+                    }
+                }
+                //Todo Health Prediction
+                //Todo get Minion with least Health
+                
+                //Lasthitting with Q to Minion
+                else if (MenuConfiguration.LastHitQ.Value)
+                {
+                    var attackingMinion = GameObjects.EnemyMinions.FirstOrDefault
+                        (e => e.Distance(Player) <= Q.Range && e.Health < Player.GetSpellDamage(e, SpellSlot.Q));
+                    if (attackingMinion != null)
+                    {
+                        Q.Cast(attackingMinion);
+                    }
+                }
+            }
+        }
+        
+        private void Killsteal()
+        {
+            //Todo Killsteal with Barrel (depending on Performance)
+            if (MenuConfiguration.KillStealQ.Value)
+            {
+                Obj_AI_Hero target = GameObjects.EnemyHeroes.FirstOrDefault(
+                    e => e.Distance(Player) < Q.Range && e.Health < Player.GetSpellDamage(e, SpellSlot.Q));
+                if (target != null)
+                {
+                    Q.Cast(target);
+                }
+            }
+            //Todo More enemies
+            if (MenuConfiguration.KillStealR.Value)
+            {
+                Obj_AI_Hero target = Selector.GetTarget(10000);
+                int wavecount = (int) Math.Ceiling(target.Health / Player.GetSpellDamage(target, SpellSlot.R));
+                if (wavecount <= 3)
+                {
+                    Vector3 castPos = barrelPrediction.GetPredictedPosition(target);
+                    // ReSharper disable once AccessToModifiedClosure
+                    var addTarget = GameObjects.EnemyHeroes.Where(e => e != target).MinBy(e => e.Distance(castPos));
+                    if (addTarget.Distance(castPos) < 700)
+                    {
+                        castPos = castPos.ReduceToMaxDistance(addTarget.Position, 200);
+                    }
+                    R.Cast(castPos);
+                    return;
+                }
+                if (wavecount <= 6)
+                {
+                    R.Cast(barrelPrediction.GetPredictedPosition(target));
+                    return;
+                }
+                if (wavecount <= 9)
+                {
+                    if (GameObjects.AllyHeroes.Any(a => a.Distance(target) < 200))
+                    {
+                        R.Cast(barrelPrediction.GetPredictedPosition(target));
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Uses W if the player has a cleansable Debuff
+        /// </summary>
+        private void Cleanse()
+        {
+            if (W.Ready && MenuConfiguration.EnabledBuffs.Any(b => b.Value.Enabled && Player.HasBuffOfType(b.Key)))
+            {
+                W.Cast();
             }
         }
     }

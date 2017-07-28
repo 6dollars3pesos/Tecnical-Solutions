@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Aimtec;
@@ -25,15 +25,15 @@ namespace TecnicalGangplank.Logic
             bool triggeredByQ = true)
         {
             
-            AttackableUnit.OnDamage += TriggerExplosion;
+            AttackableUnit.OnDamage += TriggerNextExplosion;
 
             this.bPrediction = bPrediction;
                         
             var withTime = barrelsWithExplosionTime as Tuple<Barrel, int>[] ?? barrelsWithExplosionTime.ToArray();
-            
-            firstExplosionTime = Game.TickCount + 
-                (triggeredByQ ? Helper.GetQTime(withTime.First().Item1.BarrelObject.Position) : 
-                    (int)(1000 * Storings.Player.AttackDelay));
+
+            firstExplosionTime = triggeredByQ
+                ? Helper.GetQTime(withTime.First().Item1.BarrelObject.Position)
+                : (int) (1000 * Storings.Player.AttackDelay);
             
             List<Barrel> currentBarrels = new List<Barrel>();
             
@@ -57,10 +57,10 @@ namespace TecnicalGangplank.Logic
             DelayAction.Queue(
                 firstExplosionTime + withTime.Last().Item2 * Storings.CHAINTIME - Storings.EXECUTION_OFFSET,
                 () => TriggerAction(currentBarrels));
-
+            firstExplosionTime += Game.TickCount;
         }
 
-        private void TriggerExplosion(AttackableUnit attackableUnit, AttackableUnitDamageEventArgs eventArgs)
+        private void TriggerNextExplosion(AttackableUnit attackableUnit, AttackableUnitDamageEventArgs eventArgs)
         {
             if (attackableUnit.Name != Storings.BARRELNAME)
             {
@@ -70,18 +70,18 @@ namespace TecnicalGangplank.Logic
             {
                 if (eventArgs.Source.IsMe)
                 {
-                    for (int i = notHitEnemies.Count - 1; i >= 0; i--)
-                    {
-                        if (notHitEnemies[i].Distance(attackableUnit) < Storings.BARRELRANGE)
-                        {
-                            notHitEnemies.RemoveAt(i);
-                        }
-                    }
+//                    for (int i = notHitEnemies.Count - 1; i >= 0; i--)
+//                    {
+//                        if (notHitEnemies[i].Distance(attackableUnit) < Storings.BARRELRANGE)
+//                        {
+//                            notHitEnemies.RemoveAt(i);
+//                        }
+//                    }
                 }
             }
             if (!barrelsWithExplosionTimes.Any())
             {
-                AttackableUnit.OnDamage -= TriggerExplosion;
+                AttackableUnit.OnDamage -= TriggerNextExplosion;
             }
         }
 
@@ -92,22 +92,24 @@ namespace TecnicalGangplank.Logic
 
         private void TriggerAction(List<Barrel> extendableBarrels)
         {
+            Console.WriteLine("TRIGGERED this");
             long time = Environment.TickCount;
             Spell e = Storings.CHAMPIONIMPL.E;
             if (!e.Ready)
             {
                 return;
             }
-            List<Obj_AI_Hero> remainingEnemies = GetRemainingEnemies();
-            for (int i = remainingEnemies.Count - 1; i >= 0; i--)
+            ReduceRemainingEnemies();
+            
+            for (int i = notHitEnemies.Count - 1; i >= 0; i--)
             {
-                if (remainingEnemies[i].Distance(Storings.Player) > e.Range + Storings.BARRELRANGE
+                if (notHitEnemies[i].Distance(Storings.Player) > e.Range + Storings.BARRELRANGE
                     || !extendableBarrels.Any(b => b.BarrelObject.Distance(Storings.Player) < Storings.BARRELRANGE * 3))
                 {
-                    remainingEnemies.RemoveAt(i);
+                    notHitEnemies.RemoveAt(i);
                 }
             }
-            if (!remainingEnemies.Any())
+            if (!notHitEnemies.Any())
             {
                 return;
             }
@@ -116,7 +118,8 @@ namespace TecnicalGangplank.Logic
             var orderedTargets = selector.GetOrderedTargets(2000);
             foreach (var target in orderedTargets)
             {
-                if (!remainingEnemies.Contains(target))
+                if (!notHitEnemies.Contains(target) || target.Distance(Storings.Player) > e.Range
+                    || !extendableBarrels.Any(b => b.BarrelObject.Distance(Storings.Player) < Storings.BARRELRANGE * 3))
                 {
                     continue;
                 }
@@ -150,7 +153,7 @@ namespace TecnicalGangplank.Logic
                 foreach (var position in optimalPositions)
                 {
                     float dist2 = position.Distance(extCircle.Item1);
-                    if (dist2 < dist && dist2 < extCircle.Item2)
+                    if (dist2 < dist && dist2 < extCircle.Item2 && barrelPosition.Distance(position) < Storings.CONNECTRANGE)
                     {
                         barrelPosition = position;
                         dist = dist2;
@@ -160,7 +163,7 @@ namespace TecnicalGangplank.Logic
                 if (dist != float.MaxValue)
                 {
                     e.Cast(barrelPosition);
-                    Console.WriteLine("Calculating optimal Extension Position took {0} ms", time);
+                    Console.WriteLine("Calculating optimal Extension Position took {0} ms", time - Environment.TickCount);
                     return;
                 }
             }
@@ -175,18 +178,11 @@ namespace TecnicalGangplank.Logic
             
         }
 
-        private List<Obj_AI_Hero> GetRemainingEnemies()
+        private void ReduceRemainingEnemies()
         {
-            List<Obj_AI_Hero> toReturn = notHitEnemies.ToList();
-            for (int i = toReturn.Count - 1; i >= 0; i--)
-            {
-                if (barrelsWithExplosionTimes.Any(barrelTimeTuple => bPrediction.CannotEscape(barrelTimeTuple.Item1,
-                    toReturn[i], GetPredictionDelay(barrelTimeTuple.Item2))))
-                {
-                    toReturn.RemoveAt(i);
-                }
-            }
-            return toReturn;
+            notHitEnemies.RemoveAll(e =>
+                barrelsWithExplosionTimes.Any(barrelTimeTuple => bPrediction.CannotEscape(barrelTimeTuple.Item1,
+                    e, GetPredictionDelay(barrelTimeTuple.Item2))));
         }
     }
 }

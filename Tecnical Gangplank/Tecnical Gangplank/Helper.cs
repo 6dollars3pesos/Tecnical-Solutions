@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using Aimtec;
 using Aimtec.SDK.Extensions;
 using TecnicalGangplank.Configurations;
@@ -9,7 +9,7 @@ namespace TecnicalGangplank
     {
         public static int GetQTime(Vector3 position)
         {
-            return (int)(Storings.Player.Distance(position) / 2.6f + Storings.QDELAY + Game.Ping / 2f);
+            return (int) (Storings.Player.Distance(position) / 2.6f + Storings.QDELAY + Game.Ping / 2f);
         }
 
         /// <summary>
