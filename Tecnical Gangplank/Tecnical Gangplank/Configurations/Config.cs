@@ -73,7 +73,7 @@ namespace TecnicalGangplank.Configurations
             }
             {
                 Menu keysMenu = new Menu("tecgp.keys", "Keys");
-                KeyDetonation = new MenuBool("tecgp.keys.detonation", "Extend Barrel to mouse and detonate first");
+                KeyDetonation = new MenuBool("tecgp.keys.detonation", "Extend Barrel to mouse and detonate first", false);
                 KeyDetonationKey = new MenuKeyBind("tecgp.keys.detonationkey", "Key for Extending Barrel", KeyCode.T, KeybindType.Press);
                 keysMenu.Add(KeyDetonation);
                 keysMenu.Add(KeyDetonationKey);

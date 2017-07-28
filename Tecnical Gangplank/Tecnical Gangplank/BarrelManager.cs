@@ -4,7 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Aimtec;
 using Aimtec.SDK.Extensions;
-using TecnicalGangplank.Configurations;
+ using Aimtec.SDK.Util.Cache;
+ using TecnicalGangplank.Configurations;
 
 namespace TecnicalGangplank
 {
@@ -15,6 +16,10 @@ namespace TecnicalGangplank
         public BarrelManager()
         {
             Barrels = new SortedSet<Barrel>();
+            foreach (Obj_AI_Minion minion in GameObjects.EnemyMinions)
+            {
+                AddBarrel(minion);
+            }
             GameObject.OnCreate += AddBarrel;
             //Not beautiful/efficient, but reliable
             Game.OnUpdate += RemoveBarrel;

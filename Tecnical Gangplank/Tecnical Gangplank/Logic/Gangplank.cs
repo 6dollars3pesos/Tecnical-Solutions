@@ -190,7 +190,7 @@ namespace TecnicalGangplank.Logic
             
             //Extend Logic
             //Todo Verify Cooldown
-            if (MenuConfiguration.ComboEExtend.Value && E.Ready && Q.GetSpell().CooldownEnd < 0.5f
+            if (MenuConfiguration.ComboEExtend.Value && E.Ready && (Q.Ready || Q.GetSpell().CooldownEnd < 0.5f)
                 && !barrelManager.GetBarrelsInRange(target.Position, Storings.BARRELRANGE - 100).Any())
             {
                 foreach (var barrel in barrelManager.GetBarrelsInRange(Q.Range))
@@ -335,7 +335,7 @@ namespace TecnicalGangplank.Logic
         {
             //Todo verify Cooldown
             if (MenuConfiguration.KeyDetonation.Value && MenuConfiguration.KeyDetonationKey.Value && E.Ready
-                && Q.GetSpell().Cooldown < 1)
+                && (Q.Ready || Q.GetSpell().Cooldown < 1))
             {
                 Barrel nearestBarrel = barrelManager.GetNearestBarrel(Game.CursorPos);
                 if (nearestBarrel != null && nearestBarrel.CanQNow(100) 
