@@ -39,7 +39,7 @@ namespace TecnicalGangplank.Logic
         {
             if (!E.Ready)
             {
-                Console.WriteLine("Cooldown of E is {0}", E.GetSpell().Cooldown);
+                Console.WriteLine("Cooldown of E is {0}", E.GetSpell().CooldownEnd);
             }
             Keys();
             Cleanse();
@@ -78,6 +78,7 @@ namespace TecnicalGangplank.Logic
                          MenuConfiguration.ComboDoubleE.Value) 
                         && e.Target.Name == Storings.BARRELNAME)
                     {
+                        // ReSharper disable once ObjectCreationAsStatement
                         new ExplosionTrigger(barrelManager.GetBarrelsWithBounces((Obj_AI_Minion)e.Target), barrelPrediction);
                     }
                     //Action for Q
@@ -89,6 +90,7 @@ namespace TecnicalGangplank.Logic
         {
             if (MenuConfiguration.MiscExtendE.Value && e.Target.Name == Storings.BARRELNAME)
             {
+                // ReSharper disable once ObjectCreationAsStatement
                 new ExplosionTrigger(
                     barrelManager.GetBarrelsWithBounces((Obj_AI_Minion) e.Target), barrelPrediction, false);
             }
@@ -155,7 +157,7 @@ namespace TecnicalGangplank.Logic
                 //Double-Logic
                 if (MenuConfiguration.ComboDoubleE.Value 
                     //Todo Verify Cooldown
-                    && (E.Ready || E.GetSpell().Cooldown < 480))
+                    && (E.Ready || E.GetSpell().CooldownEnd < 0.48))
                 {
                     foreach (Barrel barrel in barrelManager.GetBarrelsInRange(Q.Range + Storings.QDELTA))
                     {
@@ -171,8 +173,8 @@ namespace TecnicalGangplank.Logic
                 //Triple-Logic
                 if (MenuConfiguration.ComboTripleE.Value
                     //Todo Verfiy Cooldown
-                    && (E.Ready || E.GetSpell().Cooldown < 
-                        Storings.CHAINTIME + Storings.QDELAY - Storings.EXECUTION_OFFSET))
+                    && (E.Ready || E.GetSpell().CooldownEnd < 
+                        0.001f * Storings.CHAINTIME + Storings.QDELAY - Storings.EXECUTION_OFFSET))
                 {
                     foreach (var barrel in barrelManager.GetBarrelsInRange(Q.Range))
                     {
@@ -188,7 +190,7 @@ namespace TecnicalGangplank.Logic
             
             //Extend Logic
             //Todo Verify Cooldown
-            if (MenuConfiguration.ComboEExtend.Value && E.Ready && Q.GetSpell().Cooldown < 500
+            if (MenuConfiguration.ComboEExtend.Value && E.Ready && Q.GetSpell().CooldownEnd < 0.5f
                 && !barrelManager.GetBarrelsInRange(target.Position, Storings.BARRELRANGE - 100).Any())
             {
                 foreach (var barrel in barrelManager.GetBarrelsInRange(Q.Range))
@@ -333,7 +335,7 @@ namespace TecnicalGangplank.Logic
         {
             //Todo verify Cooldown
             if (MenuConfiguration.KeyDetonation.Value && MenuConfiguration.KeyDetonationKey.Value && E.Ready
-                && Q.GetSpell().Cooldown < 1000)
+                && Q.GetSpell().Cooldown < 1)
             {
                 Barrel nearestBarrel = barrelManager.GetNearestBarrel(Game.CursorPos);
                 if (nearestBarrel != null && nearestBarrel.CanQNow(100) 
