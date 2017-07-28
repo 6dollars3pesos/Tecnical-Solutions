@@ -339,6 +339,7 @@ namespace TecnicalGangplank.Logic
             {
                 Barrel nearestBarrel = barrelManager.GetNearestBarrel(Game.CursorPos);
                 if (nearestBarrel != null && nearestBarrel.CanQNow(100) 
+                    && nearestBarrel.BarrelObject.Distance(Player) < Q.Range
                     && !barrelManager.GetBarrelsInRange(nearestBarrel, Storings.BARRELRANGE).Any())
                 {
                     Vector3 castPos =

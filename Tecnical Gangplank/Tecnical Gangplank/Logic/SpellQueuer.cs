@@ -1,4 +1,6 @@
 ﻿using Aimtec;
+using Aimtec.SDK.Extensions;
+using TecnicalGangplank.Configurations;
 using Spell = Aimtec.SDK.Spell;
 
 namespace TecnicalGangplank.Logic
@@ -28,17 +30,16 @@ namespace TecnicalGangplank.Logic
 
         private void CastSpell()
         {
-            if (!target.IsValid || Game.TickCount > expireTime)
+            if (target.Health < 1 || !target.IsValid || Game.TickCount > expireTime)
             {
                 Game.OnUpdate -= CastSpell;
                 Obj_AI_Base.OnProcessSpellCast -= SpellCastDetection;
                 return;
             }
-            if (spell.Ready)
+            if (spell.Ready && Storings.Player.Distance(target) < spell.Range)
             {
                 spell.Cast(target);
             }
         }
-        
     }
 }
