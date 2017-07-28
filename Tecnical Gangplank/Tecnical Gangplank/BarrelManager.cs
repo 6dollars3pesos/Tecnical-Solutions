@@ -81,6 +81,14 @@ namespace TecnicalGangplank
         {
             return Barrels.Where(b => b.BarrelObject.Distance(Storings.Player) <= range);
         }
+        
+        public IEnumerable<Barrel> GetBarrelsInRange(Vector3 pos, float range)
+        {
+            return Barrels.Where(b => b.BarrelObject.Distance(pos) <= range);
+        }
+
+        
+        
 
         public IEnumerable<Tuple<Barrel, int>> GetBarrelsWithBounces(Obj_AI_Minion initObj)
         {
