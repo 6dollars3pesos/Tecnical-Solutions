@@ -24,6 +24,7 @@ namespace TecnicalGangplank.Logic
         private ITargetSelector Selector => Storings.Selector;
         private IOrbwalker Orbwalker => MenuConfiguration.Orbwalker;
         private readonly TargetGetter targetGetter = new TargetGetter(1200);
+        private bool correctedCast = false;
 
         public Gangplank() : this(new []{625, 0, 1000, float.MaxValue})
         {
@@ -468,10 +469,10 @@ namespace TecnicalGangplank.Logic
         
         private void PreventCast(SpellBookCastSpellEventArgs eventArgs)
         {
-            return;
             int correctValue = MenuConfiguration.MiscChainCorrection.Value;
-            if (correctValue == 0)
+            if (correctValue == 0 || correctedCast)
             {
+                correctedCast = false;
                 return;
             }
             Barrel nearestBarrel = barrelManager.GetNearestBarrel(eventArgs.End);
@@ -486,6 +487,7 @@ namespace TecnicalGangplank.Logic
                 if (!NavMesh.WorldToCell(castPos).Flags.HasFlag(NavCellFlags.Building | NavCellFlags.Wall))
                 {
                     eventArgs.Process = false;
+                    correctedCast = true;
                     E.Cast(nearestBarrel.BarrelObject.Position.Extend(eventArgs.End, Storings.CONNECTRANGE));
                 }
             }
