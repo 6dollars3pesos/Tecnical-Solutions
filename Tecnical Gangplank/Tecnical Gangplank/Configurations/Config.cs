@@ -106,6 +106,8 @@ namespace TecnicalGangplank.Configurations
                 keysMenu.Add(KeyDoDetonation);
                 keysMenu.Add(KeyDetonationKey);
                 keysMenu.Add(KeyDetonationOrbwalk);
+                keysMenu.Add(KeyDoExplodeNextBarrel);
+                keysMenu.Add(KeyExplodeNextBarrelKey);
                 FullMenu.Add(keysMenu);
             }
             {
