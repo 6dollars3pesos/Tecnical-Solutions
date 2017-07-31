@@ -45,6 +45,12 @@ namespace TecnicalGangplank.Configurations
         
         public MenuSlider LastHitMinimumQ { get; }
         
+        public MenuBool LaneClearBarrelQ { get; }
+        
+        public MenuBool LaneClearQ { get; }
+        
+        public MenuSlider LaneClearMinimumQ { get; }
+        
         public MenuBool KillStealQ { get; }
         
         public MenuBool KillStealR { get; }
@@ -144,6 +150,18 @@ namespace TecnicalGangplank.Configurations
                 FullMenu.Add(lastHitMenu);
             }
             {
+                Menu laneClearMenu = new Menu("tecgp.laneclear", "Lasthit");
+                LaneClearBarrelQ = new MenuBool("tecgp.laneclear.barrelq", "Q on Barrels");
+                LaneClearMinimumQ = new MenuSlider("tecgp.laneclear.minimumq", "Minimum Minions to Q on Barrel", 2, 1, 8);
+                LaneClearQ = new MenuBool("tecgp.laneclear.q", "Q on Minions");
+                
+                laneClearMenu.Add(LaneClearBarrelQ);
+                laneClearMenu.Add(LaneClearMinimumQ);
+                laneClearMenu.Add(LaneClearQ);
+                FullMenu.Add(laneClearMenu);
+            }
+
+            {
                 Menu killStealMenu = new Menu("tecgp.ks", "Killsteal");
                 KillStealQ = new MenuBool("tecgp.killsteal.q", "Use Q");
                 KillStealR = new MenuBool("tecgp.killsteal.r", "Use R", false);
@@ -177,6 +195,7 @@ namespace TecnicalGangplank.Configurations
                 miscMenu.Add(MiscReactionTime);
                 miscMenu.Add(MiscAdditionalReactionTime);
                 miscMenu.Add(MiscChainCorrection);
+                miscMenu.Add(MiscDynamicTargetRange);
                 FullMenu.Add(miscMenu);
             }
             FullMenu.Attach();

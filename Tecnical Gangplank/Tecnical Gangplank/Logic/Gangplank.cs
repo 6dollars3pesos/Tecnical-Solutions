@@ -23,7 +23,7 @@ namespace TecnicalGangplank.Logic
         private Obj_AI_Hero Player => Storings.Player;
         private ITargetSelector Selector => Storings.Selector;
         private IOrbwalker Orbwalker => MenuConfiguration.Orbwalker;
-        private readonly TargetGetter targetGetter;
+        private readonly TargetGetter targetGetter = new TargetGetter(1200);
 
         public Gangplank() : this(new []{625, 0, 1000, float.MaxValue})
         {
@@ -31,7 +31,6 @@ namespace TecnicalGangplank.Logic
         
         private Gangplank(float[] ranges) : base(ranges)
         {
-            targetGetter = new TargetGetter(MenuConfiguration, 1200);
             barrelPrediction = new BarrelPrediction(barrelManager);
         }
         
@@ -40,10 +39,6 @@ namespace TecnicalGangplank.Logic
 
         public override void UpdateGame()
         {
-            if (!Q.Ready)
-            {
-                Console.WriteLine(Q.GetSpell().CooldownEnd - Game.ClockTime);
-            }
             Keys();
             Cleanse();
             Killsteal();
@@ -56,8 +51,7 @@ namespace TecnicalGangplank.Logic
                     LastHitMode();
                     break;
                 case OrbwalkingMode.Laneclear:
-                    //Todo explicit Laneclear Mode
-                    LastHitMode();
+                    LaneClearMode();
                     break;
             }
         }
@@ -119,6 +113,7 @@ namespace TecnicalGangplank.Logic
         /// <para>Use Q on Barrel</para>
         /// <para>Use Q for Double E on Barrel</para>
         /// <para>Use Q for Triple E on Barrel</para>
+        /// <para>Use E for Triple E to extend existing Barrel</para>
         /// <para>Use E to Extend existing Barrel</para>
         /// <para>Use E to Place new Barrel (only on 3 Barrels)</para>
         /// </summary>
@@ -149,6 +144,7 @@ namespace TecnicalGangplank.Logic
                     if (attackable != null)
                     {
                         Orbwalker.ForceTarget(attackable.BarrelObject);
+                        return;
                     }
                 }
             }
@@ -188,7 +184,7 @@ namespace TecnicalGangplank.Logic
                 
                 //Triple-Logic (Q Trigger)
                 target = targetGetter.getTarget(1200);
-                if (MenuConfiguration.ComboTripleE.Value
+                if (target != null && MenuConfiguration.ComboTripleE.Value
                     //Todo Verfiy Cooldown
                     && (E.Ready || E.GetSpell().CooldownEnd - Game.ClockTime < 
                         0.001f * Storings.CHAINTIME + Storings.QDELAY - Storings.EXECUTION_OFFSET))
@@ -211,11 +207,13 @@ namespace TecnicalGangplank.Logic
                     Vector3 predictedPosition = barrelPrediction.GetPredictedPosition(target);
                     Barrel suitableBarrel =
                         barrelManager.GetNearestBarrel(predictedPosition);
-                    if (suitableBarrel.BarrelObject.Distance(predictedPosition) < Storings.BARRELRANGE * 4
+                    if (suitableBarrel != null 
+                        && suitableBarrel.BarrelObject.Distance(predictedPosition) < Storings.BARRELRANGE * 4
                         && target.Distance(Player) < E.Range)
                     {
                         E.Cast(suitableBarrel.BarrelObject.Position.ReduceToMaxDistance(predictedPosition,
                             Storings.CONNECTRANGE));
+                        return;
                     }
                 }
             }
@@ -223,7 +221,8 @@ namespace TecnicalGangplank.Logic
             //Extend Logic
             //Todo Verify Cooldown
             target = targetGetter.getTarget(1000);
-            if (MenuConfiguration.ComboEExtend.Value && E.Ready && (Q.Ready || Q.GetSpell().CooldownEnd - Game.ClockTime < 0.5f)
+            if (target != null &&
+                MenuConfiguration.ComboEExtend.Value && E.Ready && (Q.Ready || Q.GetSpell().CooldownEnd - Game.ClockTime < 0.5f)
                 && !barrelManager.GetBarrelsInRange(target.Position, Storings.BARRELRANGE - 100).Any())
             {
                 foreach (var barrel in barrelManager.GetBarrelsInRange(Q.Range))
@@ -246,7 +245,7 @@ namespace TecnicalGangplank.Logic
 
             //Q Cast on Enemy
             target = targetGetter.getTarget((int)Q.Range);
-            if (MenuConfiguration.ComboQ.Value && Q.Ready 
+            if (target != null && MenuConfiguration.ComboQ.Value && Q.Ready 
                 && (!E.Ready && E.GetSpell().CooldownEnd - Game.ClockTime > 1f || 
                     !barrelManager.GetBarrelsInRange(Q.Range + 200).Any(b => b.BarrelObject.Distance(target) < 
                                                                              Storings.BARRELRANGE * 2.5)) 
@@ -257,7 +256,7 @@ namespace TecnicalGangplank.Logic
             }
 
             target = targetGetter.getTarget(800);
-            if (E.Ready && E.GetSpell().Ammo >= MenuConfiguration.ComboEMinimum.Value
+            if (target != null && E.Ready && E.GetSpell().Ammo >= MenuConfiguration.ComboEMinimum.Value
                 && !barrelManager.GetBarrelsInRange(Q.Range + 200).Any(b => b.BarrelObject.Distance(target) < 
                                                                             Storings.BARRELRANGE * 2.5))
             {
@@ -312,6 +311,48 @@ namespace TecnicalGangplank.Logic
                 }
             }
         }
+        
+        /// <summary>
+        /// Laneclear Mode
+        /// <para>Codeflow:</para>
+        /// <para>Q on Barrel</para>
+        /// <para>Q on Minion</para>
+        /// </summary>
+        private void LaneClearMode()
+        {
+            if (Q.Ready && (MenuConfiguration.LaneClearBarrelQ.Value || MenuConfiguration.LaneClearQ.Value))
+            {
+                IEnumerable<Barrel> barrels = barrelManager.GetBarrelsInRange(Q.Range);
+                var enumerable = barrels as Barrel[] ?? barrels.ToArray();
+                
+                //Laneclearing with Q to Barrel
+                if (MenuConfiguration.LaneClearBarrelQ.Value && enumerable.Any())
+                {
+                    var attackableBarrel = enumerable.FirstOrDefault(
+                        b => b.CanQNow() &&
+                             GameObjects.EnemyMinions.Count(
+                                 m => m.Health <= Player.GetSpellDamage(m, SpellSlot.Q) &&
+                                      m.Distance(b.BarrelObject) < Storings.BARRELRANGE) >=
+                             MenuConfiguration.LaneClearMinimumQ.Value);
+                    if (attackableBarrel != null)
+                    {
+                        Q.Cast(attackableBarrel.BarrelObject);
+                    }
+                }
+                
+                //Laneclearing with Q to Minion
+                else if (MenuConfiguration.LaneClearQ.Value)
+                {
+                    var attackingMinion = GameObjects.EnemyMinions.FirstOrDefault
+                        (e => e.Distance(Player) <= Q.Range && e.Health < Player.GetSpellDamage(e, SpellSlot.Q));
+                    if (attackingMinion != null)
+                    {
+                        Q.Cast(attackingMinion);
+                    }
+                }
+            }
+        }
+
         
         private void Killsteal()
         {

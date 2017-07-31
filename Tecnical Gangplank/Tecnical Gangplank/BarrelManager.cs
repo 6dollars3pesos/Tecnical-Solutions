@@ -161,12 +161,6 @@ namespace TecnicalGangplank
                     }
                 }
             }
-            Console.WriteLine("Begin");
-            foreach (var tuple in toReturn)
-            {
-                Console.WriteLine(tuple.Item2);
-            }
-            Console.WriteLine("End");
             return toReturn;
         }
     }
