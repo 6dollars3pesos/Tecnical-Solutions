@@ -148,10 +148,7 @@ namespace TecnicalGangplank.Logic
                     }
                 }
             }
-            if (attackable == null)
-            {
-                Orbwalker.ForceTarget(null);
-            }
+            Orbwalker.ForceTarget(null);
             if (MenuConfiguration.ComboQBarrel.Value && Q.Ready)
             {
                 //Direct Q to Barrel
@@ -166,26 +163,25 @@ namespace TecnicalGangplank.Logic
                     return;
                 }
                 
-//                //Double-Logic
-//                if (MenuConfiguration.ComboDoubleE.Value 
-//                    //Todo Verify Cooldown
-//                    && (E.Ready || E.GetSpell().CooldownEnd - Game.ClockTime < 0.48))
-//                {
-//                    foreach (Barrel barrel in barrelManager.GetBarrelsInRange(Q.Range + Storings.QDELTA))
-//                    {
-//                        if (!barrel.CanQNow() || !(barrel.BarrelObject.Distance(target) < 850))
-//                        {
-//                            continue;
-//                        }
-//                        Q.Cast(barrel.BarrelObject);
-//                        return;
-//                    }
-//                }
+                //Double-Logic
+                if (MenuConfiguration.ComboDoubleE.Value 
+                    //Todo Verify Cooldown
+                    && (E.Ready || E.GetSpell().CooldownEnd - Game.ClockTime < 0.48))
+                {
+                    foreach (Barrel barrel in barrelManager.GetBarrelsInRange(Q.Range + Storings.QDELTA))
+                    {
+                        if (!barrel.CanQNow() || !(barrel.BarrelObject.Distance(target) < 850))
+                        {
+                            continue;
+                        }
+                        Q.Cast(barrel.BarrelObject);
+                        return;
+                    }
+                }
                 
                 //Triple-Logic (Q Trigger)
                 target = targetGetter.getTarget(1200);
                 if (target != null && MenuConfiguration.ComboTripleE.Value
-                    //Todo Verfiy Cooldown
                     && (E.Ready || E.GetSpell().CooldownEnd - Game.ClockTime < 
                         0.001f * Storings.CHAINTIME + Storings.QDELAY - Storings.EXECUTION_OFFSET))
                 {
@@ -264,6 +260,8 @@ namespace TecnicalGangplank.Logic
                 if (castPosition.Distance(Player.Position) < E.Range)
                 {
                     E.Cast(castPosition);
+                    // ReSharper disable once RedundantJumpStatement
+                    return;
                 }
             }
         }
