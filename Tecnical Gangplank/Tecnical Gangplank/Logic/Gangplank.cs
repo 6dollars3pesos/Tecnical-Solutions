@@ -481,8 +481,12 @@ namespace TecnicalGangplank.Logic
             float deltaDist = nearestBarrel.BarrelObject.Distance(eventArgs.End);
             if (deltaDist > Storings.CONNECTRANGE && deltaDist < Storings.CONNECTRANGE + correctValue)
             {
-                eventArgs.Process = false;
-                E.Cast(nearestBarrel.BarrelObject.Position.Extend(eventArgs.End, Storings.CONNECTRANGE));
+                Vector3 castPos = nearestBarrel.BarrelObject.Position.Extend(eventArgs.End, Storings.CONNECTRANGE);
+                if (!NavMesh.WorldToCell(castPos).Flags.HasFlag(NavCellFlags.Building | NavCellFlags.Wall))
+                {
+                    eventArgs.Process = false;
+                    E.Cast(nearestBarrel.BarrelObject.Position.Extend(eventArgs.End, Storings.CONNECTRANGE));
+                }
             }
         }
     }
