@@ -440,7 +440,7 @@ namespace TecnicalGangplank.Logic
                 && MenuConfiguration.KeyExplodeNextBarrelKey.Value && Q.Ready)
             {
                 Barrel nearestBarrel = barrelManager.GetNearestBarrel(Player.Position);
-                if (nearestBarrel.BarrelObject.Distance(Player) < Q.Range)
+                if (nearestBarrel.BarrelObject.Distance(Player) < Q.Range && nearestBarrel.CanQNow())
                 {
                     Q.Cast(nearestBarrel.BarrelObject);
                 }
@@ -469,13 +469,13 @@ namespace TecnicalGangplank.Logic
         private void PreventCast(SpellBookCastSpellEventArgs eventArgs)
         {
             int correctValue = MenuConfiguration.MiscChainCorrection.Value;
-            if (correctValue != 0)
+            if (correctValue == 0)
             {
                 return;
             }
             Barrel nearestBarrel = barrelManager.GetNearestBarrel(eventArgs.End);
             float deltaDist = nearestBarrel.BarrelObject.Distance(eventArgs.End);
-            if (deltaDist > Storings.CONNECTRANGE && deltaDist < Storings.CONNECTRANGE + deltaDist)
+            if (deltaDist > Storings.CONNECTRANGE && deltaDist < Storings.CONNECTRANGE + correctValue)
             {
                 eventArgs.Process = false;
                 E.Cast(nearestBarrel.BarrelObject.Position.Extend(eventArgs.End, Storings.CONNECTRANGE));
