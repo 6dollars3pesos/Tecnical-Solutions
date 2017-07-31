@@ -49,11 +49,15 @@ namespace TecnicalGangplank.Configurations
         
         public MenuBool KillStealR { get; }
         
-        public MenuBool KeyDetonation { get; }
+        public MenuBool KeyDoDetonation { get; }
         
         public MenuKeyBind KeyDetonationKey { get; }
         
         public MenuBool KeyDetonationOrbwalk { get; }
+        
+        public MenuBool KeyDoExplodeNextBarrel { get; }
+        
+        public MenuKeyBind KeyExplodeNextBarrelKey { get; }
         
         public MenuBool DrawQ { get; }
                 
@@ -87,11 +91,15 @@ namespace TecnicalGangplank.Configurations
             }
             {
                 Menu keysMenu = new Menu("tecgp.keys", "Keys");
-                KeyDetonation = new MenuBool("tecgp.keys.detonation", "Extend Barrel to mouse and detonate first", false);
+                KeyDoDetonation = new MenuBool("tecgp.keys.detonation", "Extend Barrel to mouse and detonate first", false);
                 KeyDetonationKey = new MenuKeyBind("tecgp.keys.detonationkey", "Key for Extending Barrel", KeyCode.T, KeybindType.Press);
                 KeyDetonationOrbwalk = new MenuBool("tecgp.keys.detonationorbwalk", "Orbwalk on Detonation");
-                keysMenu.Add(KeyDetonation);
+                KeyDoExplodeNextBarrel = new MenuBool("tecgp.keys.explodebarrel", "Explode nearest Barrel", false);
+                KeyExplodeNextBarrelKey = new MenuKeyBind("tecgp.keys", "Key for exploding nearest Barrel", KeyCode.Z, KeybindType.Press);
+                
+                keysMenu.Add(KeyDoDetonation);
                 keysMenu.Add(KeyDetonationKey);
+                keysMenu.Add(KeyDetonationOrbwalk);
                 FullMenu.Add(keysMenu);
             }
             {

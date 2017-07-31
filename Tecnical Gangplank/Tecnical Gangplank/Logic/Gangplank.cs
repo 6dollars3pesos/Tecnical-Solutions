@@ -40,6 +40,10 @@ namespace TecnicalGangplank.Logic
 
         public override void UpdateGame()
         {
+            if (!Q.Ready)
+            {
+                Console.WriteLine(Q.GetSpell().CooldownEnd - Game.ClockTime);
+            }
             Keys();
             Cleanse();
             Killsteal();
@@ -370,7 +374,7 @@ namespace TecnicalGangplank.Logic
         private void Keys()
         {
             //Todo verify Cooldown
-            if (MenuConfiguration.KeyDetonation.Value && MenuConfiguration.KeyDetonationKey.Value)
+            if (MenuConfiguration.KeyDoDetonation.Value && MenuConfiguration.KeyDetonationKey.Value)
             {
                 if (MenuConfiguration.KeyDetonationOrbwalk.Value)
                 {
@@ -390,6 +394,16 @@ namespace TecnicalGangplank.Logic
                         // ReSharper disable once ObjectCreationAsStatement
                         new SpellQueuer(Q, nearestBarrel.BarrelObject, 3000);
                     }
+                }
+            }
+
+            if (MenuConfiguration.KeyDoExplodeNextBarrel.Value 
+                && MenuConfiguration.KeyExplodeNextBarrelKey.Value && Q.Ready)
+            {
+                Barrel nearestBarrel = barrelManager.GetNearestBarrel(Player.Position);
+                if (nearestBarrel.BarrelObject.Distance(Player) < Q.Range)
+                {
+                    Q.Cast(nearestBarrel.BarrelObject);
                 }
             }
         }
