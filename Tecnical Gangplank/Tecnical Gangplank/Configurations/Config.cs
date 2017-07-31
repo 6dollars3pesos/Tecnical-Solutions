@@ -21,7 +21,7 @@ namespace TecnicalGangplank.Configurations
         
         public MenuBool ComboAABarrel { get; }
         
-        public MenuBool ComboE { get; }
+        public MenuSlider ComboEMinimum { get; }
         
         public MenuBool ComboEExtend { get; }
         
@@ -32,6 +32,12 @@ namespace TecnicalGangplank.Configurations
         public MenuBool MiscExtendE { get; }
         
         public MenuSlider MiscReactionTime { get; }
+
+        public MenuSlider MiscChainCorrection { get; }
+        
+        public MenuBool MiscDynamicTargetRange { get; }
+        
+        public MenuSlider MiscAdditionalReactionTime { get; }
         
         public MenuBool LastHitBarrelQ { get; }
         
@@ -93,7 +99,8 @@ namespace TecnicalGangplank.Configurations
                 ComboQ = new MenuBool("tecgp.combo.q", "Use Q");
                 ComboQBarrel = new MenuBool("tecgp.combo.qe", "Use Q on Barrel");
                 ComboAABarrel = new MenuBool("tecgp.combo.aae", "Use Autoattack on Barrel");
-                ComboE = new MenuBool("tecgp.combo.e", "Place first E", false);
+                ComboEMinimum = new MenuSlider("tecgp.combo.e", "Minimum Ammo to place first E", 4, 1, 4);
+                ComboEMinimum.SetToolTip("Set to 4 to turn off");
                 ComboEExtend = new MenuBool("tecgp.combo.ex", "Use E to Chain");
                 ComboDoubleE = new MenuBool("tecgp.combo.doublee", "Use Double E Combo", false);
                 ComboDoubleE.SetToolTip("Requires low Ping");
@@ -102,7 +109,7 @@ namespace TecnicalGangplank.Configurations
                 spellMenu.Add(ComboQ);
                 spellMenu.Add(ComboQBarrel);
                 spellMenu.Add(ComboAABarrel);
-                spellMenu.Add(ComboE);
+                spellMenu.Add(ComboEMinimum);
                 spellMenu.Add(ComboEExtend);
                 spellMenu.Add(ComboDoubleE);
                 spellMenu.Add(ComboTripleE);
@@ -153,9 +160,15 @@ namespace TecnicalGangplank.Configurations
                 MiscExtendE = new MenuBool("tecgp.misc.ex", "Extend E for additional Hits");
                 MiscReactionTime = new MenuSlider("tecgp.misc.reactiontime", 
                     "Enemy Reaction Time in ms (for Prediction)", 90, 0, 200);
+                MiscAdditionalReactionTime = new MenuSlider("tecgp.misc.additionalreacttime", 
+                    "Additional Reaction Time in ms (for Prediction)", 50);
+                MiscChainCorrection = new MenuSlider("tecgp.misc.chaincorrection", "Autochain when x out of range", 100, 0, 300);
+                MiscDynamicTargetRange = new MenuBool("tecgp.misc.dyntargetrange", "Dynamic Target for each Spell");
                 
                 miscMenu.Add(MiscExtendE);
                 miscMenu.Add(MiscReactionTime);
+                miscMenu.Add(MiscAdditionalReactionTime);
+                miscMenu.Add(MiscChainCorrection);
                 FullMenu.Add(miscMenu);
             }
             FullMenu.Attach();

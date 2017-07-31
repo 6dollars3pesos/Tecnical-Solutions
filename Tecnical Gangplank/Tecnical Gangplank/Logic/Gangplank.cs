@@ -23,6 +23,7 @@ namespace TecnicalGangplank.Logic
         private Obj_AI_Hero Player => Storings.Player;
         private ITargetSelector Selector => Storings.Selector;
         private IOrbwalker Orbwalker => MenuConfiguration.Orbwalker;
+        private readonly TargetGetter targetGetter;
 
         public Gangplank() : this(new []{625, 0, 1000, float.MaxValue})
         {
@@ -30,6 +31,7 @@ namespace TecnicalGangplank.Logic
         
         private Gangplank(float[] ranges) : base(ranges)
         {
+            targetGetter = new TargetGetter(MenuConfiguration, 1200);
             barrelPrediction = new BarrelPrediction(barrelManager);
         }
         
@@ -61,7 +63,18 @@ namespace TecnicalGangplank.Logic
         public override void LoadGame()
         {
             Render.OnPresent += Draw;
+            SpellBook.OnCastSpell += OnCastSpell;
         }
+
+        private void OnCastSpell(Obj_AI_Base sender, SpellBookCastSpellEventArgs e)
+        {
+            if (sender.IsMe && e.Slot == SpellSlot.E)
+            {
+                PreventCast(e);
+            }
+        }
+
+
 
         protected override void ProcessPlayerCast(Obj_AI_Base sender, Obj_AI_BaseMissileClientDataEventArgs e)
         {
@@ -83,6 +96,7 @@ namespace TecnicalGangplank.Logic
                     return;
             }
         }
+
 
         protected override void ProcessPlayerAutoAttack(Obj_AI_Base sender, Obj_AI_BaseMissileClientDataEventArgs e)
         {
@@ -115,7 +129,8 @@ namespace TecnicalGangplank.Logic
                 return;
             }
             Barrel attackable = null;
-            if (MenuConfiguration.ComboAABarrel.Value)
+            target = targetGetter.getTarget(800);
+            if (MenuConfiguration.ComboAABarrel.Value && target != null && !Player.HasBuffOfType(BuffType.Blind))
             {
                 IEnumerable<Barrel> barrels = barrelManager.
                     GetBarrelsInRange(Player.AttackRange).
@@ -147,28 +162,28 @@ namespace TecnicalGangplank.Logic
                     {
                         continue;
                     }
-                    Console.WriteLine("Casting Q from here");
                     Q.Cast(barrel.BarrelObject);
                     return;
                 }
                 
-                //Double-Logic
-                if (MenuConfiguration.ComboDoubleE.Value 
-                    //Todo Verify Cooldown
-                    && (E.Ready || E.GetSpell().CooldownEnd - Game.ClockTime < 0.48))
-                {
-                    foreach (Barrel barrel in barrelManager.GetBarrelsInRange(Q.Range + Storings.QDELTA))
-                    {
-                        if (!barrel.CanQNow() || !(barrel.BarrelObject.Distance(target) < 850))
-                        {
-                            continue;
-                        }
-                        Q.Cast(barrel.BarrelObject);
-                        return;
-                    }
-                }
+//                //Double-Logic
+//                if (MenuConfiguration.ComboDoubleE.Value 
+//                    //Todo Verify Cooldown
+//                    && (E.Ready || E.GetSpell().CooldownEnd - Game.ClockTime < 0.48))
+//                {
+//                    foreach (Barrel barrel in barrelManager.GetBarrelsInRange(Q.Range + Storings.QDELTA))
+//                    {
+//                        if (!barrel.CanQNow() || !(barrel.BarrelObject.Distance(target) < 850))
+//                        {
+//                            continue;
+//                        }
+//                        Q.Cast(barrel.BarrelObject);
+//                        return;
+//                    }
+//                }
                 
-                //Triple-Logic
+                //Triple-Logic (Q Trigger)
+                target = targetGetter.getTarget(1200);
                 if (MenuConfiguration.ComboTripleE.Value
                     //Todo Verfiy Cooldown
                     && (E.Ready || E.GetSpell().CooldownEnd - Game.ClockTime < 
@@ -177,17 +192,33 @@ namespace TecnicalGangplank.Logic
                     foreach (var barrel in barrelManager.GetBarrelsInRange(Q.Range))
                     {
                         if (barrel.CanQNow() 
-                            && barrelManager.GetBarrelsInRange(barrel).Any(b => GameObjects.EnemyHeroes.Any(
-                            e => b.BarrelObject.Distance(e.Position) < 1100 && e.Distance(Player.Position) < 1000)))
+                            && barrelManager.GetBarrelsInRange(barrel).Any(b => 
+                                b.BarrelObject.Distance(target.Position) < Storings.BARRELRANGE * 2.5))
                         {
                             Q.Cast(barrel.BarrelObject);
+                            return;
                         }
+                    }
+                }
+                //Triple-Logic (E Trigger)
+                if (MenuConfiguration.ComboTripleE.Value && E.Ready && E.GetSpell().Ammo > 1
+                    && (Q.Ready || Q.GetSpell().CooldownEnd - Game.ClockTime < 0.5f))
+                {
+                    Vector3 predictedPosition = barrelPrediction.GetPredictedPosition(target);
+                    Barrel suitableBarrel =
+                        barrelManager.GetNearestBarrel(predictedPosition);
+                    if (suitableBarrel.BarrelObject.Distance(predictedPosition) < Storings.BARRELRANGE * 4
+                        && target.Distance(Player) < E.Range)
+                    {
+                        E.Cast(suitableBarrel.BarrelObject.Position.ReduceToMaxDistance(predictedPosition,
+                            Storings.CONNECTRANGE));
                     }
                 }
             }
             
             //Extend Logic
             //Todo Verify Cooldown
+            target = targetGetter.getTarget(1000);
             if (MenuConfiguration.ComboEExtend.Value && E.Ready && (Q.Ready || Q.GetSpell().CooldownEnd - Game.ClockTime < 0.5f)
                 && !barrelManager.GetBarrelsInRange(target.Position, Storings.BARRELRANGE - 100).Any())
             {
@@ -210,14 +241,21 @@ namespace TecnicalGangplank.Logic
             }
 
             //Q Cast on Enemy
-            if (MenuConfiguration.ComboQ.Value && Q.Ready && !E.Ready 
-                && target.Distance(Player) < Q.Range && !barrelManager.GetBarrelsInRange(Q.Range + 200).Any())
+            target = targetGetter.getTarget((int)Q.Range);
+            if (MenuConfiguration.ComboQ.Value && Q.Ready 
+                && (!E.Ready && E.GetSpell().CooldownEnd - Game.ClockTime > 1f || 
+                    !barrelManager.GetBarrelsInRange(Q.Range + 200).Any(b => b.BarrelObject.Distance(target) < 
+                                                                             Storings.BARRELRANGE * 2.5)) 
+                && target.Distance(Player) < Q.Range)
             {
                 Q.Cast(target);
+                return;
             }
 
-            if (E.Ready && MenuConfiguration.ComboE.Value && E.GetSpell().Ammo > 2
-                && !barrelManager.GetBarrelsInRange(Q.Range + 200).Any())
+            target = targetGetter.getTarget(800);
+            if (E.Ready && E.GetSpell().Ammo >= MenuConfiguration.ComboEMinimum.Value
+                && !barrelManager.GetBarrelsInRange(Q.Range + 200).Any(b => b.BarrelObject.Distance(target) < 
+                                                                            Storings.BARRELRANGE * 2.5))
             {
                 Vector3 castPosition = barrelPrediction.GetPredictedPosition(target);
                 if (castPosition.Distance(Player.Position) < E.Range)
@@ -334,7 +372,10 @@ namespace TecnicalGangplank.Logic
             //Todo verify Cooldown
             if (MenuConfiguration.KeyDetonation.Value && MenuConfiguration.KeyDetonationKey.Value)
             {
-                Orbwalker.Move(Game.CursorPos);
+                if (MenuConfiguration.KeyDetonationOrbwalk.Value)
+                {
+                    Orbwalker.Move(Game.CursorPos);
+                }
                 if (E.Ready && (Q.Ready || Q.GetSpell().CooldownEnd - Game.ClockTime < 1))
                 {
                     Barrel nearestBarrel = barrelManager.GetNearestBarrel(Game.CursorPos);
@@ -352,7 +393,7 @@ namespace TecnicalGangplank.Logic
                 }
             }
         }
-        
+
         private void Draw()
         {
             if (MenuConfiguration.DrawQ.Value)
@@ -369,6 +410,22 @@ namespace TecnicalGangplank.Logic
                 {
                     Render.Circle(barrel.BarrelObject.Position, Storings.CONNECTRANGE, 90, Color.Green);
                 }
+            }
+        }
+        
+        private void PreventCast(SpellBookCastSpellEventArgs eventArgs)
+        {
+            int correctValue = MenuConfiguration.MiscChainCorrection.Value;
+            if (correctValue != 0)
+            {
+                return;
+            }
+            Barrel nearestBarrel = barrelManager.GetNearestBarrel(eventArgs.End);
+            float deltaDist = nearestBarrel.BarrelObject.Distance(eventArgs.End);
+            if (deltaDist > Storings.CONNECTRANGE && deltaDist < Storings.CONNECTRANGE + deltaDist)
+            {
+                eventArgs.Process = false;
+                E.Cast(nearestBarrel.BarrelObject.Position.Extend(eventArgs.End, Storings.CONNECTRANGE));
             }
         }
     }

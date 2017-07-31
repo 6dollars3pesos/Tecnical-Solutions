@@ -15,6 +15,8 @@ namespace TecnicalGangplank.Prediction
         private readonly BarrelManager barrelManager;
 
         private int reactionTime => Storings.CHAMPIONIMPL.MenuConfiguration.MiscReactionTime.Value;
+
+        private int additionalReactionTime => Storings.CHAMPIONIMPL.MenuConfiguration.MiscAdditionalReactionTime.Value;
         
         public BarrelPrediction(BarrelManager manager)
         {
@@ -98,7 +100,7 @@ namespace TecnicalGangplank.Prediction
 
         private int GetReactionTime(PredictionPlayer enemy)
         {
-            return reactionTime + Math.Max(Storings.ADDITIONALREACTTIME 
+            return reactionTime + Math.Max(additionalReactionTime 
                   + enemies.Find(e => e == enemy).LastPositionChange - Game.TickCount, 0);
         }
         

@@ -10,7 +10,6 @@ namespace TecnicalGangplank.Configurations
         //Todo find right value for QDELAY
         public const int QDELAY = 150;
         public const int EXECUTION_OFFSET = 400;
-        public const int ADDITIONALREACTTIME = 50;
         public const float CONNECTRANGE = 685;
         public const int CHAINTIME = 400;
         public const string BARRELNAME = "Barrel";
