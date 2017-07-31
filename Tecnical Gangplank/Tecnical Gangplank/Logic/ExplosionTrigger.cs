@@ -1,7 +1,8 @@
 ﻿﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Aimtec;
+ using System.Media;
+ using Aimtec;
 using Aimtec.SDK.Extensions;
 using Aimtec.SDK.TargetSelector;
 using Aimtec.SDK.Util;
@@ -125,7 +126,7 @@ namespace TecnicalGangplank.Logic
         private void TriggerAction(List<Barrel> extendableBarrels)
         {
             Spell e = Storings.CHAMPIONIMPL.E;
-            if (!e.Ready)
+            if (!e.Ready || Storings.Player.SpellBook.IsCastingSpell)
             {
                 return;
             }

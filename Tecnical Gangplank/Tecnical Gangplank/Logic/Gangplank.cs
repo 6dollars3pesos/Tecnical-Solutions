@@ -468,6 +468,7 @@ namespace TecnicalGangplank.Logic
         
         private void PreventCast(SpellBookCastSpellEventArgs eventArgs)
         {
+            return;
             int correctValue = MenuConfiguration.MiscChainCorrection.Value;
             if (correctValue == 0)
             {
