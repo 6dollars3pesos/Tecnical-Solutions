@@ -474,6 +474,10 @@ namespace TecnicalGangplank.Logic
                 return;
             }
             Barrel nearestBarrel = barrelManager.GetNearestBarrel(eventArgs.End);
+            if (nearestBarrel == null)
+            {
+                return;
+            }
             float deltaDist = nearestBarrel.BarrelObject.Distance(eventArgs.End);
             if (deltaDist > Storings.CONNECTRANGE && deltaDist < Storings.CONNECTRANGE + correctValue)
             {
