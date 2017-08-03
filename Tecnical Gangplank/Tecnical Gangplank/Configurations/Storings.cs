@@ -10,9 +10,8 @@ namespace TecnicalGangplank.Configurations
         public const int QDELAY = 150; //Lower = Higher Accuracy
         public const int EXECUTION_OFFSET = 300;
         public const float CONNECTRANGE = 685;
-        public const int CHAINTIME = 400;
+        public const int CHAINTIME = 350;
         public const string BARRELNAME = "Barrel";
-        public const int QDELTA = 25;
         public const float BARRELRANGE = CONNECTRANGE / 2;
         public const float PREDICTIONMODIFIER = 0.8f;
         public static readonly Config MenuConfiguration = new Config();

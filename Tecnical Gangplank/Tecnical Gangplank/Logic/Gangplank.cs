@@ -3,11 +3,13 @@ using System.Collections;
 using System.Drawing;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Aimtec;
 using Aimtec.SDK.Damage;
 using Aimtec.SDK.Extensions;
 using Aimtec.SDK.Orbwalking;
 using Aimtec.SDK.TargetSelector;
+using Aimtec.SDK.Util;
 using Aimtec.SDK.Util.Cache;
 using TecnicalGangplank.Configurations;
 using TecnicalGangplank.Extensions;
@@ -26,6 +28,7 @@ namespace TecnicalGangplank.Logic
         private IOrbwalker Orbwalker => MenuConfiguration.Orbwalker;
         private readonly TargetGetter targetGetter = new TargetGetter(1200);
         private bool correctedCast = false;
+        private CancellationTokenSource canceller;
 
         public Gangplank() : this(new []{625, 0, 1000, float.MaxValue})
         {
@@ -129,20 +132,18 @@ namespace TecnicalGangplank.Logic
             {
                 return;
             }
-            Barrel attackable = null;
             target = targetGetter.getTarget(800);
             if (MenuConfiguration.ComboAABarrel.Value && target != null && !Player.HasBuffOfType(BuffType.Blind))
             {
-                IEnumerable<Barrel> barrels = barrelManager.
-                    GetBarrelsInRange(Player.AttackRange).
-                    Where(b => b.CanAANow());
                 
+                IEnumerable<Barrel> barrels = barrelManager.
+                    GetBarrelsInRange(225).
+                    Where(b => b.CanAANow());
                 //Noone in Range to Attack
                 var enumerable = barrels as Barrel[] ?? barrels.ToArray();
                 if (enumerable.Any() && Orbwalker.GetOrbwalkingTarget() == null && Orbwalker.CanAttack())
                 {
-                    attackable =
-                        enumerable.FirstOrDefault(b => barrelPrediction.CanHitEnemy(b, target, Player.AttackDelay));
+                    var attackable = enumerable.FirstOrDefault(b => barrelPrediction.CanHitEnemy(b, target, Player.AttackDelay));
                     if (attackable != null)
                     {
                         Orbwalker.ForceTarget(attackable.BarrelObject);
@@ -157,7 +158,8 @@ namespace TecnicalGangplank.Logic
                 foreach (Barrel barrel in barrelManager.GetBarrelsInRange(Q.Range))
                 {
                     if (!barrel.CanQNow() ||
-                        !barrelPrediction.CanHitEnemy(barrel, target, Helper.GetQTime(barrel.BarrelObject.Position)))
+                        !barrelPrediction.CanHitEnemy(barrel, target, Helper.GetQTime(barrel.BarrelObject.Position))
+                        || barrel.BarrelObject.Distance(Player) < 225 && MenuConfiguration.ComboAABarrel.Value && !barrel.CanAANow())
                     {
                         continue;
                     }
@@ -169,12 +171,17 @@ namespace TecnicalGangplank.Logic
                 if (MenuConfiguration.ComboDoubleE.Value 
                     && (E.Ready || E.GetSpell().CooldownEnd - Game.ClockTime < 0.48))
                 {
-                    foreach (Barrel barrel in barrelManager.GetBarrelsInRange(Q.Range + Storings.QDELTA))
+                    foreach (Barrel barrel in barrelManager.GetBarrelsInRange(Q.Range + 50))
                     {
-                        if (!barrel.CanQNow() || !(barrel.BarrelObject.Distance(target) < 850))
+                        if (!barrel.CanQNow() || !(barrel.BarrelObject.Distance(target) < 850) ||
+                            barrel.BarrelObject.Distance(Player) < Q.Range + 30)
                         {
                             continue;
                         }
+                        Console.WriteLine("Double Q Trigger");
+                        MenuConfiguration.Orbwalker.MovingEnabled = false;
+                        canceller?.Cancel();
+                        canceller = DelayAction.Queue(400, () => MenuConfiguration.Orbwalker.MovingEnabled = true);
                         Q.Cast(barrel.BarrelObject);
                         return;
                     }
@@ -193,6 +200,7 @@ namespace TecnicalGangplank.Logic
                                 b.BarrelObject.Distance(target.Position) < Storings.BARRELRANGE * 2.5))
                         {
                             Q.Cast(barrel.BarrelObject);
+                            Console.WriteLine("Triple Q Trigger");
                             return;
                         }
                     }

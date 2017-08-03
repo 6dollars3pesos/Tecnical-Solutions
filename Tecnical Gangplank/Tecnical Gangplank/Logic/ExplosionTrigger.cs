@@ -16,7 +16,7 @@ namespace TecnicalGangplank.Logic
 {
     public class ExplosionTrigger
     {
-        private readonly List<Tuple<Barrel, int>> barrelsWithExplosionTimes = new List<Tuple<Barrel, int>>();
+        private readonly List<Tuple<Barrel, int>> barrelsWithExplosionTimes;
         private readonly List<Obj_AI_Hero> notHitEnemies = GameObjects.EnemyHeroes.ToList();
         private readonly BarrelPrediction bPrediction;
         private readonly int firstExplosionTime;
@@ -25,16 +25,14 @@ namespace TecnicalGangplank.Logic
         public ExplosionTrigger(IEnumerable<Tuple<Barrel, int>> barrelsWithExplosionTime, BarrelPrediction bPrediction,
             bool triggeredByQ = true)
         {
-            
+            barrelsWithExplosionTimes = barrelsWithExplosionTime.ToList();
             AttackableUnit.OnDamage += TriggerNextExplosion;
 
             this.bPrediction = bPrediction;
                         
-            var withTime = barrelsWithExplosionTime as Tuple<Barrel, int>[] ?? barrelsWithExplosionTime.ToArray();
-
             firstExplosionTime = triggeredByQ
-                ? Helper.GetQTime(withTime.First().Item1.BarrelObject.Position)
-                : (int) (1000 * Storings.Player.AttackDelay);
+                ? Helper.GetQTime(barrelsWithExplosionTimes.First().Item1.BarrelObject.Position)
+                : 0;
             
             List<Barrel> currentBarrels = new List<Barrel>();
             
@@ -42,15 +40,15 @@ namespace TecnicalGangplank.Logic
             int cind = 0;
             
             //Assuming Tuple to be ordered
-            while (cind < withTime.Length)
+            while (cind < barrelsWithExplosionTimes.Count)
             {
-                while (cind < withTime.Length && currentMultiplier == withTime[cind].Item2)
+                while (cind < barrelsWithExplosionTimes.Count && currentMultiplier == barrelsWithExplosionTimes[cind].Item2)
                 {
-                    currentBarrels.Add(withTime[cind].Item1);
+                    currentBarrels.Add(barrelsWithExplosionTimes[cind].Item1);
                     cind++;
                 }
                 var barrelCopy = currentBarrels.ToList();
-                int delay = firstExplosionTime + currentMultiplier * Storings.CHAINTIME - Storings.EXECUTION_OFFSET;
+                int delay = firstExplosionTime + currentMultiplier * Storings.CHAINTIME - Storings.EXECUTION_OFFSET - Game.Ping/2;
                 
                 Console.WriteLine("Delayed by {0} ms", delay);
                 if (delay > 0)
@@ -71,6 +69,7 @@ namespace TecnicalGangplank.Logic
                 currentBarrels.Clear();
                 currentMultiplier++;
             }
+            firstExplosionTime += Game.TickCount;
         }
 
         private void TriggerNextExplosion(AttackableUnit attackableUnit, AttackableUnitDamageEventArgs eventArgs)
@@ -94,9 +93,9 @@ namespace TecnicalGangplank.Logic
         private bool TriggerAction(List<Barrel> extendableBarrels)
         {
             Spell e = Storings.ChampionImpl.E;
-            if (!e.Ready || Storings.Player.SpellBook.IsCastingSpell)
+            if (!e.Ready)
             {
-                return e.Ready;
+                return false;
             }
             ReduceRemainingEnemies();
             Console.WriteLine("{0} Enemies remaining", notHitEnemies.Count);
@@ -131,14 +130,18 @@ namespace TecnicalGangplank.Logic
                 Tuple<Vector3, float> extCircle =
                     bPrediction.GetPredictionCircle(target, Storings.EXECUTION_OFFSET);
                 Vector2[] intersections = Helper.IntersectCircles(barrelPosition.To2D(),
-                    Storings.CONNECTRANGE - 10, Storings.Player.Position.To2D(), e.Range);
+                    Storings.CONNECTRANGE - 10, Storings.Player.Position.To2D(), e.Range - 10);
                 List<Vector3> optimalPositions = new List<Vector3>(4);
                 foreach (Vector2 vector in intersections)
                 {
                     optimalPositions.Add(vector.To3D());
                 }
                 optimalPositions.Add(Storings.Player.Position.ReduceToMaxDistance(extCircle.Item1, e.Range));
-                optimalPositions.Add(barrelPosition.ReduceToMaxDistance(extCircle.Item1, Storings.CONNECTRANGE - 10));
+                Vector3 tempPos = barrelPosition.ReduceToMaxDistance(extCircle.Item1, Storings.CONNECTRANGE - 10);
+                if (tempPos.Distance(Storings.Player) <= e.Range)
+                {
+                    optimalPositions.Add(tempPos);
+                }
                 dist = float.MaxValue;
                 foreach (var position in optimalPositions)
                 {
@@ -153,8 +156,13 @@ namespace TecnicalGangplank.Logic
                 // ReSharper disable once CompareOfFloatsByEqualityOperator
                 if (dist != float.MaxValue)
                 {
+                    Console.WriteLine("Casting to Position " + barrelPosition);
                     e.Cast(barrelPosition);
                     return true;
+                }
+                else
+                {
+                    Console.WriteLine("No Suitable Cast Position");
                 }
             }
             //Todo Nice Algorithm that hits multiple enemies
@@ -170,6 +178,9 @@ namespace TecnicalGangplank.Logic
 
         private void ReduceRemainingEnemies()
         {
+            Console.WriteLine("Prediction Delay: {0}", GetPredictionDelay(0));
+            Console.WriteLine("First Explosion Time: {0}", firstExplosionTime);
+            Console.WriteLine("Elements: {0}", barrelsWithExplosionTimes.Count);
             notHitEnemies.RemoveAll(e =>
                 barrelsWithExplosionTimes.Any(barrelTimeTuple => bPrediction.CannotEscape(barrelTimeTuple.Item1,
                     e, GetPredictionDelay(barrelTimeTuple.Item2))));
@@ -191,6 +202,7 @@ namespace TecnicalGangplank.Logic
 
             private void ActionWrapper()
             {
+                Console.WriteLine("Doing things");
                 if (Game.TickCount > expireTime || customAction(value))
                 {
                     Game.OnUpdate -= ActionWrapper;
