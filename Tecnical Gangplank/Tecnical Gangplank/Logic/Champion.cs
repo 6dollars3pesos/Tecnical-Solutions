@@ -4,10 +4,8 @@ using Spell = Aimtec.SDK.Spell;
 
 namespace TecnicalGangplank.Logic
 {
-    public abstract class Champion : IChampion
-    {
-        public Config MenuConfiguration;
-        
+    public abstract class Champion
+    {        
         #region Properties
 
         public Spell Q { get; }
@@ -24,7 +22,7 @@ namespace TecnicalGangplank.Logic
         {
             if (ranges.Length != 4)
             {
-                throw new TechnicalException("Champion could not be initialized - Improper Constructor call");
+                throw new TecnicalException("Champion could not be initialized - Improper Constructor call");
             }
             Q = new Spell(SpellSlot.Q, ranges[0]);
             W = new Spell(SpellSlot.W, ranges[1]);
@@ -46,7 +44,6 @@ namespace TecnicalGangplank.Logic
 
         private void InternalGameLoad()
         {
-            MenuConfiguration = new Config();
             Game.OnUpdate += UpdateGame;
             Obj_AI_Base.OnProcessSpellCast += (sender, e) =>
             {

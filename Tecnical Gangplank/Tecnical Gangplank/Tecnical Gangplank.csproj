@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Tecnical Gangplank</RootNamespace>
     <AssemblyName>Tecnical Gangplank</AssemblyName>
-    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -63,12 +63,11 @@
     <Compile Include="Helper.cs" />
     <Compile Include="Logic\Champion.cs" />
     <Compile Include="Logic\Gangplank.cs" />
-    <Compile Include="Logic\IChampion.cs" />
     <Compile Include="Logic\Initialize.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TargetGetter.cs" />
-    <Compile Include="TechnicalException.cs" />
+    <Compile Include="TecnicalException.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

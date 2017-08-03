@@ -15,8 +15,9 @@ namespace TecnicalGangplank.Configurations
         public const int QDELTA = 25;
         public const float BARRELRANGE = CONNECTRANGE / 2;
         public const float PREDICTIONMODIFIER = 0.8f;
+        public static readonly Config MenuConfiguration = new Config();
         public static readonly Obj_AI_Hero Player = ObjectManager.GetLocalPlayer();
         public static readonly ITargetSelector Selector = TargetSelector.Implementation;
-        public static readonly Champion CHAMPIONIMPL = new Gangplank();
+        public static readonly Champion ChampionImpl = new Gangplank();
     }
 }

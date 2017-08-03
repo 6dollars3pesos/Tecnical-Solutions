@@ -20,7 +20,7 @@ namespace TecnicalGangplank
                 return;
             }
             //Aimtec.SDK.Bootstrap.Load();
-            Storings.CHAMPIONIMPL.HandleGameLoad();
+            Storings.ChampionImpl.HandleGameLoad();
         }
     }
 }

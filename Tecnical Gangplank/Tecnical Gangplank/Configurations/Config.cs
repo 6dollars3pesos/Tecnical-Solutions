@@ -121,7 +121,6 @@ namespace TecnicalGangplank.Configurations
                 ComboDoubleE = new MenuBool("tecgp.combo.doublee", "Use Double E Combo", false);
                 ComboDoubleE.SetToolTip("Requires low Ping");
                 ComboTripleE = new MenuBool("tecgp.combo.triplee", "Use Triple E Combo");
-                //Todo Add R
                 spellMenu.Add(ComboQ);
                 spellMenu.Add(ComboQBarrel);
                 spellMenu.Add(ComboAABarrel);

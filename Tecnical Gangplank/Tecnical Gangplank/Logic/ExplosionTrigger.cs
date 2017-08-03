@@ -56,41 +56,21 @@ namespace TecnicalGangplank.Logic
                 if (delay > 0)
                 {
                     if (currentMultiplier == 0 
-                        && Storings.CHAMPIONIMPL.MenuConfiguration.ComboDoubleE.Value)
+                        && Storings.Player.Distance(currentBarrels[0].BarrelObject) > Storings.ChampionImpl.Q.Range - 25
+                        && Storings.MenuConfiguration.ComboDoubleE.Value)
                     {
-                        DelayAction.Queue(delay, () => TriggerAction(barrelCopy));
+                        // ReSharper disable once ObjectCreationAsStatement
+                        new AsapAction<List<Barrel>>(700, TriggerAction, barrelCopy);
                     }
                     else if (currentMultiplier != 0
-                             && Storings.CHAMPIONIMPL.MenuConfiguration.ComboTripleE.Value)
+                             && Storings.MenuConfiguration.ComboTripleE.Value)
                     {
-                        DelayAction.Queue(delay - 50, () => TriggerAction(barrelCopy));
+                        DelayAction.Queue(delay, () => TriggerAction(barrelCopy));
                     }
                 }
                 currentBarrels.Clear();
                 currentMultiplier++;
             }
-            //foreach (Tuple<Barrel,int> tuple in withTime)
-            //{
-            //    //Trigger an Event for all Elements that get destroyed by the same time
-            //    if (currentMultiplier != tuple.Item2)
-            //    {
-            //        var barrelCopy = currentBarrels;
-            //        Console.WriteLine("Delayed by {0} ms", firstExplosionTime + tuple.Item2 * Storings.CHAINTIME - Storings.EXECUTION_OFFSET);
-            //        DelayAction.Queue(
-            //            firstExplosionTime + tuple.Item2 * Storings.CHAINTIME - Storings.EXECUTION_OFFSET,
-            //            () => TriggerAction(barrelCopy));
-            //        currentBarrels.Clear();
-            //        currentMultiplier = tuple.Item2;
-            //    }
-            //    currentBarrels.Add(tuple.Item1);
-            //    barrelsWithExplosionTimes.Add(
-            //        new Tuple<Barrel, int>(tuple.Item1, firstExplosionTime + tuple.Item2 * Storings.CHAINTIME));
-            //}
-            //DelayAction.Queue(
-            //    firstExplosionTime + withTime.Last().Item2 * Storings.CHAINTIME - Storings.EXECUTION_OFFSET,
-            //    () => TriggerAction(currentBarrels));
-            //Console.WriteLine("Delayed by {0} ms", firstExplosionTime + withTime.Last().Item2 * Storings.CHAINTIME - Storings.EXECUTION_OFFSET);
-            //firstExplosionTime += Game.TickCount;
         }
 
         private void TriggerNextExplosion(AttackableUnit attackableUnit, AttackableUnitDamageEventArgs eventArgs)
@@ -99,19 +79,7 @@ namespace TecnicalGangplank.Logic
             {
                 return;
             }
-            if (barrelsWithExplosionTimes.RemoveAll(t => t.Item1.BarrelObject == attackableUnit) != 0)
-            {
-                if (eventArgs.Source.IsMe)
-                {
-//                    for (int i = notHitEnemies.Count - 1; i >= 0; i--)
-//                    {
-//                        if (notHitEnemies[i].Distance(attackableUnit) < Storings.BARRELRANGE)
-//                        {
-//                            notHitEnemies.RemoveAt(i);
-//                        }
-//                    }
-                }
-            }
+            barrelsWithExplosionTimes.RemoveAll(t => t.Item1.BarrelObject == attackableUnit) ;
             if (!barrelsWithExplosionTimes.Any())
             {
                 AttackableUnit.OnDamage -= TriggerNextExplosion;
@@ -123,18 +91,18 @@ namespace TecnicalGangplank.Logic
             return Game.TickCount + bounces * Storings.CHAINTIME - firstExplosionTime;
         }
 
-        private void TriggerAction(List<Barrel> extendableBarrels)
+        private bool TriggerAction(List<Barrel> extendableBarrels)
         {
-            Spell e = Storings.CHAMPIONIMPL.E;
+            Spell e = Storings.ChampionImpl.E;
             if (!e.Ready || Storings.Player.SpellBook.IsCastingSpell)
             {
-                return;
+                return e.Ready;
             }
             ReduceRemainingEnemies();
             Console.WriteLine("{0} Enemies remaining", notHitEnemies.Count);
             if (!notHitEnemies.Any())
             {
-                return;
+                return true;
             }
             //Calculating here the optimal Cast position
             ITargetSelector selector = TargetSelector.Implementation;
@@ -186,7 +154,7 @@ namespace TecnicalGangplank.Logic
                 if (dist != float.MaxValue)
                 {
                     e.Cast(barrelPosition);
-                    return;
+                    return true;
                 }
             }
             //Todo Nice Algorithm that hits multiple enemies
@@ -197,7 +165,7 @@ namespace TecnicalGangplank.Logic
 //                barrelPositions[i] = extendableBarrels[i].BarrelObject.Position;
 //            }
 //            time = Environment.TickCount - time;
-            
+            return true;
         }
 
         private void ReduceRemainingEnemies()
@@ -205,6 +173,29 @@ namespace TecnicalGangplank.Logic
             notHitEnemies.RemoveAll(e =>
                 barrelsWithExplosionTimes.Any(barrelTimeTuple => bPrediction.CannotEscape(barrelTimeTuple.Item1,
                     e, GetPredictionDelay(barrelTimeTuple.Item2))));
+        }
+        
+        private class AsapAction<T>
+        {
+            private readonly int expireTime;
+            private readonly Func<T, bool> customAction;
+            private readonly T value;
+
+            public AsapAction(int expireTicks, Func<T, bool> customAction, T value)
+            {
+                expireTime = expireTicks + Game.TickCount;
+                this.customAction = customAction;
+                this.value = value;
+                Game.OnUpdate += ActionWrapper;
+            }
+
+            private void ActionWrapper()
+            {
+                if (Game.TickCount > expireTime || customAction(value))
+                {
+                    Game.OnUpdate -= ActionWrapper;
+                }
+            }
         }
     }
 }

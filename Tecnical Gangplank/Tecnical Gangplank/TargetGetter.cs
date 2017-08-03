@@ -15,7 +15,7 @@ namespace TecnicalGangplank
         public Obj_AI_Hero getTarget(int range)
         {
             return TargetSelector.Implementation.GetTarget(
-                Storings.CHAMPIONIMPL.MenuConfiguration.MiscDynamicTargetRange.Value ? range : staticRange);
+                Storings.MenuConfiguration.MiscDynamicTargetRange.Value ? range : staticRange);
         }
     }
 }

@@ -22,6 +22,7 @@ namespace TecnicalGangplank.Logic
 
         private Obj_AI_Hero Player => Storings.Player;
         private ITargetSelector Selector => Storings.Selector;
+        private readonly Config MenuConfiguration = Storings.MenuConfiguration;
         private IOrbwalker Orbwalker => MenuConfiguration.Orbwalker;
         private readonly TargetGetter targetGetter = new TargetGetter(1200);
         private bool correctedCast = false;
@@ -166,7 +167,6 @@ namespace TecnicalGangplank.Logic
                 
                 //Double-Logic
                 if (MenuConfiguration.ComboDoubleE.Value 
-                    //Todo Verify Cooldown
                     && (E.Ready || E.GetSpell().CooldownEnd - Game.ClockTime < 0.48))
                 {
                     foreach (Barrel barrel in barrelManager.GetBarrelsInRange(Q.Range + Storings.QDELTA))
@@ -216,7 +216,6 @@ namespace TecnicalGangplank.Logic
             }
             
             //Extend Logic
-            //Todo Verify Cooldown
             target = targetGetter.getTarget(1000);
             if (target != null &&
                 MenuConfiguration.ComboEExtend.Value && E.Ready && (Q.Ready || Q.GetSpell().CooldownEnd - Game.ClockTime < 0.5f)
@@ -295,14 +294,12 @@ namespace TecnicalGangplank.Logic
                         Q.Cast(attackableBarrel.BarrelObject);
                     }
                 }
-                //Todo Health Prediction
-                //Todo get Minion with least Health
-                
+                //Todo Health Prediction                
                 //Lasthitting with Q to Minion
                 else if (MenuConfiguration.LastHitQ.Value)
                 {
-                    var attackingMinion = GameObjects.EnemyMinions.FirstOrDefault
-                        (e => e.Distance(Player) <= Q.Range && e.Health < Player.GetSpellDamage(e, SpellSlot.Q));
+                    var attackingMinion = GameObjects.EnemyMinions.Where(e => e.Distance(Player) <= Q.Range && e.Health < Player.GetSpellDamage(e, SpellSlot.Q))
+                        .MinBy(m => m.Health);
                     if (attackingMinion != null)
                     {
                         Q.Cast(attackingMinion);
@@ -355,7 +352,6 @@ namespace TecnicalGangplank.Logic
         
         private void Killsteal()
         {
-            //Todo Killsteal with Barrel (depending on Performance)
             if (MenuConfiguration.KillStealQ.Value)
             {
                 Obj_AI_Hero target = GameObjects.EnemyHeroes.FirstOrDefault(
@@ -413,7 +409,6 @@ namespace TecnicalGangplank.Logic
         /// </summary>
         private void Keys()
         {
-            //Todo verify Cooldown
             if (MenuConfiguration.KeyDoDetonation.Value && MenuConfiguration.KeyDetonationKey.Value)
             {
                 if (MenuConfiguration.KeyDetonationOrbwalk.Value)
@@ -450,11 +445,11 @@ namespace TecnicalGangplank.Logic
 
         private void Draw()
         {
-            if (MenuConfiguration.DrawQ.Value)
+            if (MenuConfiguration.DrawQ.Value && Q.Ready)
             {
                 Render.Circle(Player.Position, Q.Range, 90, Color.Red);
             }
-            if (MenuConfiguration.DrawE.Value)
+            if (MenuConfiguration.DrawE.Value && E.Ready)
             {
                 Render.Circle(Player.Position, E.Range, 90, Color.Red);
             }

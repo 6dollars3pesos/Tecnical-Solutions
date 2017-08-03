@@ -14,9 +14,9 @@ namespace TecnicalGangplank.Prediction
 
         private readonly BarrelManager barrelManager;
 
-        private int reactionTime => Storings.CHAMPIONIMPL.MenuConfiguration.MiscReactionTime.Value;
+        private int reactionTime => Storings.MenuConfiguration.MiscReactionTime.Value;
 
-        private int additionalReactionTime => Storings.CHAMPIONIMPL.MenuConfiguration.MiscAdditionalReactionTime.Value;
+        private int additionalReactionTime => Storings.MenuConfiguration.MiscAdditionalReactionTime.Value;
         
         public BarrelPrediction(BarrelManager manager)
         {
