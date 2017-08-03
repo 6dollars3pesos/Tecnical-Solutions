@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Aimtec;
 using Aimtec.SDK.Events;
+using Aimtec.SDK.Util.Cache;
 using TecnicalGangplank.Configurations;
 
 namespace TecnicalGangplank
@@ -15,7 +16,7 @@ namespace TecnicalGangplank
 
         private static void Initialize()
         {
-            if (Storings.Player.ChampionName.ToLower() != "gangplank")
+            if (GameObjects.Player.ChampionName.ToLower() != "gangplank")
             {
                 return;
             }

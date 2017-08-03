@@ -42,7 +42,6 @@ namespace TecnicalGangplank
         {
             BarrelObject = barrel;
             barrelAttackTime = GetBarrelAttackTime();
-            Console.WriteLine("Barrel attackable at " + barrelAttackTime + ", current time " + Game.TickCount);
             playerLevel = Storings.Player.Level;
         }
 
@@ -53,7 +52,6 @@ namespace TecnicalGangplank
 
         public void ReduceBarrelAttackTick(int delay)
         {
-            Console.WriteLine("Reduced Barrel Time");
             attackTimes.Add(Game.TickCount + delay);
             DelayAction.Queue(delay, () =>
             {

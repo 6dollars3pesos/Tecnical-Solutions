@@ -81,7 +81,6 @@ namespace TecnicalGangplank.Prediction
         /// <returns>True if enemy cannot escape</returns>
         public bool CannotEscape(Barrel barrel, Obj_AI_Hero enemy, int delay)
         {
-            Console.WriteLine("Distance: {0}, Delay: {1}", barrel.BarrelObject.Distance(enemy), delay);
             int completeReationTime = GetReactionTime(enemies.Find(e => e.Hero == enemy));
             
             Vector3 predictedEnemyPosition =

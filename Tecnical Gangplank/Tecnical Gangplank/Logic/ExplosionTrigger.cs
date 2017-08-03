@@ -50,7 +50,6 @@ namespace TecnicalGangplank.Logic
                 var barrelCopy = currentBarrels.ToList();
                 int delay = firstExplosionTime + currentMultiplier * Storings.CHAINTIME - Storings.EXECUTION_OFFSET - Game.Ping/2;
                 
-                Console.WriteLine("Delayed by {0} ms", delay);
                 if (delay > 0)
                 {
                     if (currentMultiplier == 0 
@@ -98,7 +97,6 @@ namespace TecnicalGangplank.Logic
                 return false;
             }
             ReduceRemainingEnemies();
-            Console.WriteLine("{0} Enemies remaining", notHitEnemies.Count);
             if (!notHitEnemies.Any())
             {
                 return true;
@@ -108,14 +106,11 @@ namespace TecnicalGangplank.Logic
             var orderedTargets = selector.GetOrderedTargets(e.Range + Storings.BARRELRANGE);
             foreach (var target in orderedTargets)
             {
-                Console.WriteLine("Target there");
                 if (!notHitEnemies.Contains(target) 
                     || !extendableBarrels.Any(b => b.BarrelObject.Distance(target) < Storings.BARRELRANGE * 3))
                 {
-                    Console.WriteLine("{0} Barrels there", extendableBarrels.Count);
                     continue;
                 }
-                Console.WriteLine("Trying to hit Target");
                 float dist = float.MaxValue;
                 Vector3 barrelPosition = Vector3.Zero;
                 foreach (Barrel barrel in extendableBarrels)
@@ -156,13 +151,8 @@ namespace TecnicalGangplank.Logic
                 // ReSharper disable once CompareOfFloatsByEqualityOperator
                 if (dist != float.MaxValue)
                 {
-                    Console.WriteLine("Casting to Position " + barrelPosition);
                     e.Cast(barrelPosition);
                     return true;
-                }
-                else
-                {
-                    Console.WriteLine("No Suitable Cast Position");
                 }
             }
             //Todo Nice Algorithm that hits multiple enemies
@@ -178,9 +168,6 @@ namespace TecnicalGangplank.Logic
 
         private void ReduceRemainingEnemies()
         {
-            Console.WriteLine("Prediction Delay: {0}", GetPredictionDelay(0));
-            Console.WriteLine("First Explosion Time: {0}", firstExplosionTime);
-            Console.WriteLine("Elements: {0}", barrelsWithExplosionTimes.Count);
             notHitEnemies.RemoveAll(e =>
                 barrelsWithExplosionTimes.Any(barrelTimeTuple => bPrediction.CannotEscape(barrelTimeTuple.Item1,
                     e, GetPredictionDelay(barrelTimeTuple.Item2))));
@@ -202,7 +189,6 @@ namespace TecnicalGangplank.Logic
 
             private void ActionWrapper()
             {
-                Console.WriteLine("Doing things");
                 if (Game.TickCount > expireTime || customAction(value))
                 {
                     Game.OnUpdate -= ActionWrapper;

@@ -178,7 +178,6 @@ namespace TecnicalGangplank.Logic
                         {
                             continue;
                         }
-                        Console.WriteLine("Double Q Trigger");
                         MenuConfiguration.Orbwalker.MovingEnabled = false;
                         canceller?.Cancel();
                         canceller = DelayAction.Queue(400, () => MenuConfiguration.Orbwalker.MovingEnabled = true);
@@ -200,7 +199,6 @@ namespace TecnicalGangplank.Logic
                                 b.BarrelObject.Distance(target.Position) < Storings.BARRELRANGE * 2.5))
                         {
                             Q.Cast(barrel.BarrelObject);
-                            Console.WriteLine("Triple Q Trigger");
                             return;
                         }
                     }
