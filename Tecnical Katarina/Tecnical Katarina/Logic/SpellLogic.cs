@@ -72,10 +72,6 @@ namespace TecnicalKatarina.Logic
             {
                 return false;
             }
-            if (Storings.DaggerManager.AllDaggers.Any())
-            {
-                Console.WriteLine("Distance: {0}:", Storings.DaggerManager.AllDaggers[0].Distance(target));
-            }
             var eDaggers = Storings.DaggerManager.AllDaggers
                 .Where(pos => pos.Distance(target) <= Storings.DAGGERTRIGGERRANGE + Storings.DAGGERDAMAGERANGE).ToList();
             if (eDaggers.Any())

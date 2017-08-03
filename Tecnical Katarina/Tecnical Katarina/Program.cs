@@ -21,6 +21,11 @@ namespace TecnicalKatarina
                 return;
             }
             //Aimtec.SDK.Bootstrap.Load();
+            LoadChampion();
+        }
+
+        private static void LoadChampion()
+        {
             Storings.ChampionImpl.HandleGameLoad();
         }
     }

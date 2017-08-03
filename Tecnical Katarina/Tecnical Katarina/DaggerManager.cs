@@ -51,10 +51,6 @@ namespace TecnicalKatarina
                     AllDaggers.Remove(minDagger);
                 }
             }
-            else
-            {
-                Console.WriteLine(sender.Name);
-            }
         }
     }
 }
