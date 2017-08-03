@@ -13,7 +13,6 @@ namespace TecnicalKatarina.Logic
 {
     public static class SpellLogic
     {
-        public static Vector3 castPos;
         public static bool QSpell(bool harassMode = false)
         {
             Spell q = Storings.ChampionImpl.Q;
@@ -82,7 +81,7 @@ namespace TecnicalKatarina.Logic
             if (eDaggers.Any())
             {
                 Vector3 daggerPos = eDaggers.MinBy(pos => pos.Distance(target));
-                castPos = daggerPos.ReduceToMaxDistance(target.Position, Storings.DAGGERTRIGGERRANGE - 1);
+                Vector3 castPos = daggerPos.ReduceToMaxDistance(target.Position, Storings.DAGGERTRIGGERRANGE - 1);
                 
                 castPos = Storings.Player.Position.ReduceToMaxDistance(castPos, e.Range);
                 if (castPos.Distance(target) < Storings.DAGGERDAMAGERANGE

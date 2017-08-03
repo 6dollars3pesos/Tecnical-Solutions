@@ -315,7 +315,6 @@ namespace TecnicalKatarina.Logic
             {
                 Render.Circle(Storings.Player.Position, R.Range, 90, Color.Red);
             }
-            Render.Circle(SpellLogic.castPos, 50, 60, Color.Aqua);
         }
     }
 }
