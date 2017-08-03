@@ -21,7 +21,6 @@ namespace TecnicalGangplank
                 return;
             }
             //Aimtec.SDK.Bootstrap.Load();
-            Storings.ChampionImpl.HandleGameLoad();
             LoadChampion();
         }
 
@@ -29,6 +28,5 @@ namespace TecnicalGangplank
         {
             Storings.ChampionImpl.HandleGameLoad();
         }
-
     }
 }
