@@ -1,6 +1,7 @@
 ﻿﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+ using System.Drawing;
+ using System.Linq;
 using Aimtec;
 using Aimtec.SDK.Extensions;
 using Aimtec.SDK.Util.Cache;
@@ -113,8 +114,14 @@ namespace TecnicalGangplank.Prediction
             }
             Vector3 priorPosition = enemy.Position;
             float movementPending = ticks * enemy.MoveSpeed * 0.001f;
+            bool firstPosition = true;
             foreach (Vector3 nextPosition in enemy.Path)
             {
+                if (firstPosition)
+                {
+                    firstPosition = false;
+                    continue;
+                }
                 float vectorLength = (priorPosition - nextPosition).Length;
                 if (vectorLength > movementPending)
                 {

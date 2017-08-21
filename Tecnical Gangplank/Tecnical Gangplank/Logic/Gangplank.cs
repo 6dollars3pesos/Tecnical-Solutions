@@ -211,6 +211,7 @@ namespace TecnicalGangplank.Logic
                     Barrel suitableBarrel =
                         barrelManager.GetNearestBarrel(predictedPosition);
                     if (suitableBarrel != null 
+                        && suitableBarrel.BarrelObject.Distance(predictedPosition) > Storings.BARRELRANGE * 2.5
                         && suitableBarrel.BarrelObject.Distance(predictedPosition) < Storings.BARRELRANGE * 4
                         && target.Distance(Player) < E.Range)
                     {
