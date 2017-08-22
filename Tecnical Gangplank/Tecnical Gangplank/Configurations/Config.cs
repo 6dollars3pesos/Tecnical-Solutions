@@ -38,6 +38,8 @@ namespace TecnicalGangplank.Configurations
         public MenuBool MiscDynamicTargetRange { get; }
         
         public MenuSlider MiscAdditionalReactionTime { get; }
+
+        public MenuBool MiscDebug { get; }
         
         public MenuBool LastHitBarrelQ { get; }
         
@@ -191,12 +193,14 @@ namespace TecnicalGangplank.Configurations
                     "Additional Reaction Time in ms (for Prediction)", 50);
                 MiscChainCorrection = new MenuSlider("tecgp.misc.chaincorrection", "Autochain when x out of range", 100, 0, 300);
                 MiscDynamicTargetRange = new MenuBool("tecgp.misc.dyntargetrange", "Dynamic Target for each Spell");
-                
+                MiscDebug = new MenuBool("tecgp.misc.debug", "Debug", false);
+
                 miscMenu.Add(MiscExtendE);
                 miscMenu.Add(MiscReactionTime);
                 miscMenu.Add(MiscAdditionalReactionTime);
                 miscMenu.Add(MiscChainCorrection);
                 miscMenu.Add(MiscDynamicTargetRange);
+                miscMenu.Add(MiscDebug);
                 FullMenu.Add(miscMenu);
             }
             FullMenu.Attach();

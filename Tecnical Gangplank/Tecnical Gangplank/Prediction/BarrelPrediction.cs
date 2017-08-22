@@ -21,10 +21,26 @@ namespace TecnicalGangplank.Prediction
         
         public BarrelPrediction(BarrelManager manager)
         {
+            if (Storings.MenuConfiguration.MiscDebug.Value)
+            {
+                Render.OnPresent += DrawPrediction;
+            }
             barrelManager = manager;
             foreach (var enemy in GameObjects.EnemyHeroes)
             {
                 enemies.Add(new PredictionPlayer(enemy));
+            }
+        }
+
+        private void DrawPrediction()
+        {
+            if (!Storings.MenuConfiguration.MiscDebug.Value)
+            {
+                return;
+            }
+            foreach (PredictionPlayer predictionEnemy in enemies)
+            {
+                Render.Circle(GetPositionAfterTime(predictionEnemy.Hero, GetReactionTime(predictionEnemy)), 50, 180, Color.DarkOrange);
             }
         }
 
@@ -40,11 +56,15 @@ namespace TecnicalGangplank.Prediction
         /// <returns>True if Player can get that Player with a Barrel</returns>
         public bool CanHitEnemy(Barrel barrel, Obj_AI_Hero enemy, float delay)
         {
+            
+            if (delay < 0)
+            {
+                return false;
+            }
             int completeReactionTime = GetReactionTime(enemies.Find(e => e.Hero == enemy));
-
-            Vector3 predictedEnemyPosition = GetPositionAfterTime(enemy, completeReactionTime);
+            Vector3 predictedEnemyPosition = GetPositionAfterTime(enemy, (int)Math.Min(completeReactionTime, delay));
             if (predictedEnemyPosition.Distance(barrel.BarrelObject.Position) < Storings.BARRELRANGE
-                - Storings.PREDICTIONMODIFIER * Math.Min(delay - completeReactionTime, 0) * enemy.MoveSpeed)
+                - Storings.PREDICTIONMODIFIER * Math.Max(delay - completeReactionTime, 0) * enemy.MoveSpeed * 0.001)
             {
                 return true;
             }
@@ -56,11 +76,11 @@ namespace TecnicalGangplank.Prediction
                     continue;
                 }
                 float remainingRange = Storings.BARRELRANGE -
-                                       enemy.MoveSpeed * Storings.PREDICTIONMODIFIER *
-                                       (Math.Min(delay - completeReactionTime, 0) + Storings.CHAINTIME * tuple.Item2);
+                                       enemy.MoveSpeed * Storings.PREDICTIONMODIFIER * 0.001f *
+                                       (Math.Max(delay - completeReactionTime, 0) + Storings.CHAINTIME * tuple.Item2);
                 if (remainingRange < 0)
                 {
-                    continue;
+                    return false;
                 }
                 if (predictedEnemyPosition.Distance(tuple.Item1.BarrelObject.Position) < remainingRange)
                 {
@@ -85,10 +105,11 @@ namespace TecnicalGangplank.Prediction
             int completeReationTime = GetReactionTime(enemies.Find(e => e.Hero == enemy));
             
             Vector3 predictedEnemyPosition =
-                GetPositionAfterTime(enemy, completeReationTime);
+                GetPositionAfterTime(enemy, Math.Min(completeReationTime, delay));
 
             return predictedEnemyPosition.Distance(barrel.BarrelObject.Position) < Storings.BARRELRANGE
-                   - Storings.PREDICTIONMODIFIER * Math.Min(delay - completeReationTime, 0) * enemy.MoveSpeed;
+                   - Storings.PREDICTIONMODIFIER * Math.Min(delay - completeReationTime, 0) * enemy.MoveSpeed
+                   && enemy.Position.Distance(barrel.BarrelObject) < Storings.BARRELRANGE;
         }
 
         public Tuple<Vector3, float> GetPredictionCircle(Obj_AI_Hero enemy, int delay)

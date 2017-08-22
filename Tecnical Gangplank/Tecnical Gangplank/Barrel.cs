@@ -80,9 +80,9 @@ namespace TecnicalGangplank
         /// </para>
         /// </summary>
         /// <returns>True if AA can be done</returns>
-        public bool CanAANow()
+        public bool CanAANow(int delay = 0)
         {
-            return CanDestroyAtTime(Game.TickCount + (int)Storings.Player.AttackCastDelay * 1000);
+            return CanDestroyAtTime(Game.TickCount + (int)Storings.Player.AttackCastDelay * 1000 + delay);
         }
 
         private bool CanDestroyAtTime(int tick)

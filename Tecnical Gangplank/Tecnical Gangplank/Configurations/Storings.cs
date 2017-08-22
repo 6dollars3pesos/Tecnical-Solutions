@@ -11,6 +11,7 @@ namespace TecnicalGangplank.Configurations
         public const int EXECUTION_OFFSET = 300;
         public const float CONNECTRANGE = 685;
         public const int CHAINTIME = 350;
+        public const int BARRELAARANGE = 225;
         public const string BARRELNAME = "Barrel";
         public const float BARRELRANGE = CONNECTRANGE / 2;
         public const float PREDICTIONMODIFIER = 0.8f;
