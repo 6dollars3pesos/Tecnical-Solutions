@@ -27,7 +27,7 @@ namespace TecnicalGangplank.Logic
         private readonly Config MenuConfiguration = Storings.MenuConfiguration;
         private IOrbwalker Orbwalker => MenuConfiguration.Orbwalker;
         private readonly TargetGetter targetGetter = new TargetGetter(1200);
-        private bool correctedCast = false;
+        private bool correctedCast;
         private CancellationTokenSource canceller;
 
         public Gangplank() : this(new []{625, 0, 1000, float.MaxValue})

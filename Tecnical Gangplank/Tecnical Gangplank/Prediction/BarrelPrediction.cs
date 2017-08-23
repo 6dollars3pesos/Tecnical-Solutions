@@ -3,7 +3,8 @@ using System.Collections.Generic;
  using System.Drawing;
  using System.Linq;
 using Aimtec;
-using Aimtec.SDK.Extensions;
+ using Aimtec.SDK.Events;
+ using Aimtec.SDK.Extensions;
 using Aimtec.SDK.Util.Cache;
 using TecnicalGangplank.Configurations;
 
@@ -103,7 +104,6 @@ namespace TecnicalGangplank.Prediction
         public bool CannotEscape(Barrel barrel, Obj_AI_Hero enemy, int delay)
         {
             int completeReationTime = GetReactionTime(enemies.Find(e => e.Hero == enemy));
-            
             Vector3 predictedEnemyPosition =
                 GetPositionAfterTime(enemy, Math.Min(completeReationTime, delay));
 
@@ -122,13 +122,39 @@ namespace TecnicalGangplank.Prediction
 
         private int GetReactionTime(PredictionPlayer enemy)
         {
-            return reactionTime + Math.Max(additionalReactionTime 
-                  + enemies.Find(e => e == enemy).LastPositionChange - Game.TickCount, 0);
+            int[] reactionTimes = new int[3];
+            //Remaining Dash Time
+            reactionTimes[0] = enemy.CurrentDash.EndTick - Game.TickCount;
+            //Generic Reaction Time
+            reactionTimes[1] = reactionTime + Math.Max(additionalReactionTime
+                                               + enemies.Find(e => e == enemy).LastPositionChange - Game.TickCount, 0);
+            try
+            {
+                int snareTime = enemy.Hero.Buffs
+                    .Where(b => b.Type == BuffType.Snare || b.Type == BuffType.Stun || b.Type == BuffType.Knockup)
+                    .Max(b => (int) ((b.EndTime - Game.ClockTime) * 1000));
+                //Increased Reaction time if player has Stun/Snare/Knockup Debuff
+                reactionTimes[2] = snareTime;
+            }
+            catch (InvalidOperationException)
+            {
+                //Intended Behaviour when Player is not Debuffed
+            }
+            return reactionTimes.Max();
+
         }
         
                 
         private Vector3 GetPositionAfterTime(Obj_AI_Hero enemy, int ticks)
         {
+            PredictionPlayer predEnemy = enemies.Find(e => e.Hero == enemy);
+            if (predEnemy.isDashing())
+            {
+                return predEnemy.CurrentDash.EndTick > ticks + Game.TickCount 
+                    ? enemy.Position.Extend(predEnemy.CurrentDash.EndPos.To3D(), 
+                        ticks * predEnemy.CurrentDash.Speed * 0.001f)
+                    : predEnemy.CurrentDash.EndPos.To3D();
+            }
             if (!enemy.HasPath)
             {
                 return enemy.Position;
@@ -161,6 +187,8 @@ namespace TecnicalGangplank.Prediction
 
         private class PredictionPlayer
         {
+            internal Dash.DashArgs CurrentDash;
+                        
             internal readonly Obj_AI_Hero Hero;
 
             internal int LastPositionChange;
@@ -170,9 +198,28 @@ namespace TecnicalGangplank.Prediction
                 Hero = hero;
                 LastPositionChange = Game.TickCount;
                 Obj_AI_Base.OnNewPath += UpdatePosition;
+                Dash.HeroDashed += HeroDash;
             }
 
-            //Todo add Dashes
+            internal bool isDashing()
+            {
+                return CurrentDash != null && CurrentDash.EndTick > Game.TickCount;
+            }
+
+            private void HeroDash(object sender, Dash.DashArgs dashArgs)
+            {
+                if (dashArgs.Unit != Hero)
+                {
+                    return;
+                }
+                LastPositionChange = Game.TickCount;
+                if (dashArgs.IsBlink)
+                {
+                    return;
+                }
+                CurrentDash = dashArgs;
+            }
+
             private void UpdatePosition(Obj_AI_Base sender, Obj_AI_BaseNewPathEventArgs eventArgs)
             {
                 if (Hero != sender)
