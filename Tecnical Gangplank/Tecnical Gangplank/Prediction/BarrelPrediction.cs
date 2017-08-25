@@ -124,7 +124,7 @@ namespace TecnicalGangplank.Prediction
         {
             int[] reactionTimes = new int[3];
             //Remaining Dash Time
-            reactionTimes[0] = enemy.CurrentDash.EndTick - Game.TickCount;
+            reactionTimes[0] =0;// enemy.CurrentDash.EndTick - Game.TickCount;
             //Generic Reaction Time
             reactionTimes[1] = reactionTime + Math.Max(additionalReactionTime
                                                + enemies.Find(e => e == enemy).LastPositionChange - Game.TickCount, 0);
